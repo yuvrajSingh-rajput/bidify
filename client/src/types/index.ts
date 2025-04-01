@@ -12,7 +12,7 @@ export interface Player {
   id: string;
   name: string;
   image?: string;
-  role: 'Batsman' | 'Bowler' | 'All-rounder' | 'Wicket Keeper';
+  role: 'Batsman' | 'Pace Bowler' | 'Medium Pace Bowler' | 'Spinner' | 'Batting All-rounder' | 'Bowling All-rounder' | 'Wicket Keeper';
   basePrice: number;
   stats: {
     matches: number;

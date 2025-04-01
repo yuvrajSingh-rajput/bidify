@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layouts/MainLayout";
 import { Input } from "@/components/ui/input";
@@ -19,9 +18,9 @@ import { Auction } from "@/types";
 const mockPlayers = [
   { id: 1, name: "Virat Kohli", role: "Batsman", country: "India", image: "/placeholder.svg", basePrice: 10000, stats: { matches: 215, runs: 6450, wickets: 0, average: 52.7, economy: 0, strikeRate: 139.5 }, team: "Super Kings", inAuctionPool: true },
   { id: 2, name: "Kane Williamson", role: "Batsman", country: "New Zealand", image: "/placeholder.svg", basePrice: 8500, stats: { matches: 189, runs: 5320, wickets: 0, average: 46.2, economy: 0, strikeRate: 124.8 }, team: null, inAuctionPool: true },
-  { id: 3, name: "Jasprit Bumrah", role: "Bowler", country: "India", image: "/placeholder.svg", basePrice: 9000, stats: { matches: 178, runs: 180, wickets: 210, average: 0, economy: 6.8, strikeRate: 0 }, team: "Mumbai Indians", inAuctionPool: false },
-  { id: 4, name: "Ben Stokes", role: "All-rounder", country: "England", image: "/placeholder.svg", basePrice: 9500, stats: { matches: 165, runs: 3200, wickets: 120, average: 34.5, economy: 8.2, strikeRate: 136.7 }, team: null, inAuctionPool: true },
-  { id: 5, name: "Jos Buttler", role: "Wicket-keeper", country: "England", image: "/placeholder.svg", basePrice: 8800, stats: { matches: 157, runs: 4120, wickets: 0, average: 38.9, economy: 0, strikeRate: 145.3 }, team: "Rajasthan Royals", inAuctionPool: false },
+  { id: 3, name: "Jasprit Bumrah", role: "Pace Bowler", country: "India", image: "/placeholder.svg", basePrice: 9000, stats: { matches: 178, runs: 180, wickets: 210, average: 0, economy: 6.8, strikeRate: 0 }, team: "Mumbai Indians", inAuctionPool: false },
+  { id: 4, name: "Ben Stokes", role: "Batting All-rounder", country: "England", image: "/placeholder.svg", basePrice: 9500, stats: { matches: 165, runs: 3200, wickets: 120, average: 34.5, economy: 8.2, strikeRate: 136.7 }, team: null, inAuctionPool: true },
+  { id: 5, name: "Jos Buttler", role: "Wicket Keeper", country: "England", image: "/placeholder.svg", basePrice: 8800, stats: { matches: 157, runs: 4120, wickets: 0, average: 38.9, economy: 0, strikeRate: 145.3 }, team: "Rajasthan Royals", inAuctionPool: false },
 ];
 
 // Mock auctions to add players to
@@ -164,9 +163,12 @@ const PlayersPage = () => {
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="Batsman">Batsman</SelectItem>
-                  <SelectItem value="Bowler">Bowler</SelectItem>
-                  <SelectItem value="All-rounder">All-rounder</SelectItem>
-                  <SelectItem value="Wicket-keeper">Wicket-keeper</SelectItem>
+                  <SelectItem value="Pace Bowler">Pace Bowler</SelectItem>
+                  <SelectItem value="Medium Pace Bowler">Medium Pace Bowler</SelectItem>
+                  <SelectItem value="Spinner">Spinner</SelectItem>
+                  <SelectItem value="Batting All-rounder">Batting All-rounder</SelectItem>
+                  <SelectItem value="Bowling All-rounder">Bowling All-rounder</SelectItem>
+                  <SelectItem value="Wicket Keeper">Wicket Keeper</SelectItem>
                 </SelectContent>
               </Select>
               

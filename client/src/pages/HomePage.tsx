@@ -19,7 +19,7 @@ const HomePage = () => {
             <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
               <Link to="/register">Get Started</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-blue-700">
+            <Button asChild variant="outline" size="lg" className="border-white text-white bg-blue-700 hover:bg-blue-500">
               <Link to="/login">Sign In</Link>
             </Button>
           </div>

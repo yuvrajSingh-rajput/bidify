@@ -1,10 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Player } from "@/types";
 
@@ -47,6 +45,15 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
     
     onSubmit(playerData);
   };
+
+  // Function to determine if stat fields should be shown based on player role
+  const shouldShowBattingStats = () => {
+    return ["Batsman", "Batting All-rounder", "Wicket Keeper"].includes(role);
+  };
+
+  const shouldShowBowlingStats = () => {
+    return ["Pace Bowler", "Medium Pace Bowler", "Spinner", "Bowling All-rounder"].includes(role);
+  };
   
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,8 +92,11 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Batsman">Batsman</SelectItem>
-              <SelectItem value="Bowler">Bowler</SelectItem>
-              <SelectItem value="All-rounder">All-rounder</SelectItem>
+              <SelectItem value="Pace Bowler">Pace Bowler</SelectItem>
+              <SelectItem value="Medium Pace Bowler">Medium Pace Bowler</SelectItem>
+              <SelectItem value="Spinner">Spinner</SelectItem>
+              <SelectItem value="Batting All-rounder">Batting All-rounder</SelectItem>
+              <SelectItem value="Bowling All-rounder">Bowling All-rounder</SelectItem>
               <SelectItem value="Wicket Keeper">Wicket Keeper</SelectItem>
             </SelectContent>
           </Select>
@@ -118,7 +128,7 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
             />
           </div>
           
-          {(role === "Batsman" || role === "All-rounder" || role === "Wicket Keeper") && (
+          {shouldShowBattingStats() && (
             <>
               <div>
                 <Label htmlFor="runs" className="text-sm">Runs</Label>
@@ -154,7 +164,7 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
             </>
           )}
           
-          {(role === "Bowler" || role === "All-rounder") && (
+          {shouldShowBowlingStats() && (
             <>
               <div>
                 <Label htmlFor="wickets" className="text-sm">Wickets</Label>

@@ -14,9 +14,12 @@ const getRoleColor = (role: Player["role"]) => {
   switch (role) {
     case "Batsman":
       return "bg-bidfy-blue text-white";
-    case "Bowler":
+    case "Pace Bowler":
+    case "Medium Pace Bowler":
+    case "Spinner":
       return "bg-bidfy-green text-white";
-    case "All-rounder":
+    case "Batting All-rounder":
+    case "Bowling All-rounder":
       return "bg-bidfy-amber text-white";
     case "Wicket Keeper":
       return "bg-bidfy-red text-white";

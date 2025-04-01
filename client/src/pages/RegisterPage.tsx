@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import RegisterForm from "@/components/auth/RegisterForm";
 
@@ -12,6 +11,11 @@ const RegisterPage = () => {
           </Link>
           <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
             <RegisterForm />
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Are you a player looking to register? <Link to="/player-registration" className="text-bidfy-blue hover:underline font-medium">Register as a player</Link>
+            </p>
           </div>
         </div>
       </div>

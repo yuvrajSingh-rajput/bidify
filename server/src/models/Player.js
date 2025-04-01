@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import cron from 'node-cron'; // For ES module
 
 const playerSchema = new mongoose.Schema({
   name: {
@@ -51,13 +52,34 @@ const playerSchema = new mongoose.Schema({
     strikeRate: { type: Number, default: 0 },
     economy: { type: Number, default: 0 }
   },
-  status: {
-    type: String,
-    enum: ['available', 'sold', 'unsold'],
-    default: 'available'
+  contractEndDate: Date,
+  available: {
+    type: Boolean, // ['available', 'sold', 'unsold']
+    default: true,
   }
 }, {
   timestamps: true
 });
 
-export default mongoose.model('Player', playerSchema);
+const Player = mongoose.model('Player', playerSchema);
+
+const updatePlayerAvailability = async () => {
+  try {
+      const now = new Date();
+      const result = await Player.updateMany(
+          { contractEndDate: { $lte: now }, available: false },
+          { $set: { status: true } }
+      );
+      console.log(`Updated ${result.modifiedCount} players to available.`);
+  } catch (error) {
+      console.error('Error updating player availability:', error);
+  }
+};
+
+// Schedule the job to run every midnight
+cron.schedule('0 0 * * *', () => {
+  console.log('Running scheduled job to update player availability...');
+  updatePlayerAvailability();
+});
+
+export default Player;

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -68,10 +67,10 @@ const mockPlayers: Player[] = [
   {
     id: "3",
     name: "Jasprit Bumrah",
-    role: "Bowler",
+    role: "Pace Bowler",
     basePrice: 15000000,
     stats: {
-      matches: 120,
+      matches: 178,
       wickets: 130,
       economy: 6.7,
     },
@@ -80,7 +79,7 @@ const mockPlayers: Player[] = [
   {
     id: "4",
     name: "Ravindra Jadeja",
-    role: "All-rounder",
+    role: "Bowling All-rounder",
     basePrice: 12000000,
     stats: {
       matches: 200,

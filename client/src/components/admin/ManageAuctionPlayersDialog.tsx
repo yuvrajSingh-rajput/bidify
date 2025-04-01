@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Player } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -39,7 +38,7 @@ const mockAuctionPlayers: Player[] = [
   { 
     id: "3", 
     name: "Jasprit Bumrah", 
-    role: "Bowler", 
+    role: "Pace Bowler", 
     basePrice: 1500000,
     stats: { matches: 178, wickets: 210, economy: 6.8 },
     status: "unsold"
@@ -47,7 +46,7 @@ const mockAuctionPlayers: Player[] = [
   { 
     id: "4", 
     name: "Ravindra Jadeja", 
-    role: "All-rounder", 
+    role: "Bowling All-rounder", 
     basePrice: 1200000,
     stats: { matches: 165, runs: 3200, wickets: 120, average: 34.5, economy: 8.2, strikeRate: 136.7 },
     status: "available"

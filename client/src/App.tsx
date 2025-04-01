@@ -10,6 +10,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import PlayerRegistrationPage from "./pages/PlayerRegistrationPage";
 import Dashboard from "./pages/Dashboard";
 import AuctionsPage from "./pages/AuctionsPage";
 import AuctionDetailPage from "./pages/AuctionDetailPage";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/player-registration" element={<PlayerRegistrationPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/auctions" element={<AuctionsPage />} />
             <Route path="/auctions/:id" element={<AuctionDetailPage />} />
