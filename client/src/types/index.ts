@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -13,6 +12,8 @@ export interface Player {
   name: string;
   image?: string;
   role: 'Batsman' | 'Pace Bowler' | 'Medium Pace Bowler' | 'Spinner' | 'Batting All-rounder' | 'Bowling All-rounder' | 'Wicket Keeper';
+  battingStyle?: 'right-handed' | 'left-handed';
+  bowlingStyle?: 'right-arm-fast' | 'right-arm-medium' | 'right-arm-off-spin' | 'left-arm-fast' | 'left-arm-medium' | 'left-arm-spin' | 'none';
   basePrice: number;
   stats: {
     matches: number;

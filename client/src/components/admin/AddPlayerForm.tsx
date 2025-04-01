@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Player } from "@/types";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface AddPlayerFormProps {
   onSubmit: (playerData: Omit<Player, "id">) => void;
@@ -14,6 +16,8 @@ interface AddPlayerFormProps {
 const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
   const [name, setName] = useState("");
   const [role, setRole] = useState<Player["role"]>("Batsman");
+  const [battingStyle, setBattingStyle] = useState<'right-handed' | 'left-handed'>('right-handed');
+  const [bowlingStyle, setBowlingStyle] = useState<Player["bowlingStyle"]>("none");
   const [country, setCountry] = useState("");
   const [basePrice, setBasePrice] = useState("");
   const [matches, setMatches] = useState("");
@@ -30,6 +34,8 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
     const playerData = {
       name,
       role,
+      battingStyle,
+      bowlingStyle: role !== "Batsman" && role !== "Wicket Keeper" ? bowlingStyle : "none",
       country,
       basePrice: parseInt(basePrice, 10),
       stats: {
@@ -53,6 +59,11 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
 
   const shouldShowBowlingStats = () => {
     return ["Pace Bowler", "Medium Pace Bowler", "Spinner", "Bowling All-rounder"].includes(role);
+  };
+
+  // Function to determine if bowling style should be shown
+  const shouldShowBowlingStyle = () => {
+    return role !== "Batsman" && role !== "Wicket Keeper";
   };
   
   return (
@@ -112,6 +123,50 @@ const AddPlayerForm = ({ onSubmit, onCancel }: AddPlayerFormProps) => {
             required 
           />
         </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="battingStyle">Batting Style</Label>
+          <RadioGroup
+            value={battingStyle}
+            onValueChange={(value: 'right-handed' | 'left-handed') => setBattingStyle(value)}
+            className="flex space-x-4 pt-2"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="right-handed" id="right-handed" />
+              <Label htmlFor="right-handed">Right Handed</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="left-handed" id="left-handed" />
+              <Label htmlFor="left-handed">Left Handed</Label>
+            </div>
+          </RadioGroup>
+        </div>
+        
+        {shouldShowBowlingStyle() && (
+          <div className="space-y-2">
+            <Label htmlFor="bowlingStyle">Bowling Style</Label>
+            <Select 
+              value={bowlingStyle} 
+              onValueChange={(value: Player["bowlingStyle"]) => setBowlingStyle(value)}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select bowling style" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="right-arm-fast">Right Arm Fast</SelectItem>
+                <SelectItem value="right-arm-medium">Right Arm Medium</SelectItem>
+                <SelectItem value="right-arm-off-spin">Right Arm Off-spin</SelectItem>
+                <SelectItem value="left-arm-fast">Left Arm Fast</SelectItem>
+                <SelectItem value="left-arm-medium">Left Arm Medium</SelectItem>
+                <SelectItem value="left-arm-spin">Left Arm Spin</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
       
       <div className="space-y-2">

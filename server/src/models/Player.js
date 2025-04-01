@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import cron from 'node-cron'; // For ES module
+import cron from 'node-cron'; 
 
 const playerSchema = new mongoose.Schema({
   name: {

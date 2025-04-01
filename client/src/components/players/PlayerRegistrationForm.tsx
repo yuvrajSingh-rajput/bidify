@@ -7,12 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Player } from "@/types";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const PlayerRegistrationForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [role, setRole] = useState<Player["role"]>("Batsman");
+  const [battingStyle, setBattingStyle] = useState<'right-handed' | 'left-handed'>('right-handed');
+  const [bowlingStyle, setBowlingStyle] = useState<Player["bowlingStyle"]>("none");
   const [age, setAge] = useState("");
   const [bio, setBio] = useState("");
   const [playingExperience, setPlayingExperience] = useState("");
@@ -68,6 +71,8 @@ const PlayerRegistrationForm = () => {
       setEmail("");
       setPhoneNumber("");
       setRole("Batsman");
+      setBattingStyle("right-handed");
+      setBowlingStyle("none");
       setAge("");
       setBio("");
       setPlayingExperience("");
@@ -97,6 +102,11 @@ const PlayerRegistrationForm = () => {
 
   const shouldShowBowlingStats = () => {
     return ["Pace Bowler", "Medium Pace Bowler", "Spinner", "Bowling All-rounder"].includes(role);
+  };
+
+  // Function to determine if bowling style should be shown
+  const shouldShowBowlingStyle = () => {
+    return role !== "Batsman" && role !== "Wicket Keeper";
   };
 
   return (
@@ -184,6 +194,48 @@ const PlayerRegistrationForm = () => {
             placeholder="Years of playing experience"
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="battingStyle">Batting Style</Label>
+          <RadioGroup
+            value={battingStyle}
+            onValueChange={(value: 'right-handed' | 'left-handed') => setBattingStyle(value)}
+            className="flex space-x-6 pt-2"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="right-handed" id="right-handed" />
+              <Label htmlFor="right-handed">Right Handed</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="left-handed" id="left-handed" />
+              <Label htmlFor="left-handed">Left Handed</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {shouldShowBowlingStyle() && (
+          <div className="space-y-2">
+            <Label htmlFor="bowlingStyle">Bowling Style</Label>
+            <Select
+              value={bowlingStyle}
+              onValueChange={(value: Player["bowlingStyle"]) => setBowlingStyle(value)}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select bowling style" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="right-arm-fast">Right Arm Fast</SelectItem>
+                <SelectItem value="right-arm-medium">Right Arm Medium</SelectItem>
+                <SelectItem value="right-arm-off-spin">Right Arm Off-spin</SelectItem>
+                <SelectItem value="left-arm-fast">Left Arm Fast</SelectItem>
+                <SelectItem value="left-arm-medium">Left Arm Medium</SelectItem>
+                <SelectItem value="left-arm-spin">Left Arm Spin</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
       
       {/* Cricket Statistics Section */}
