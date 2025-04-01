@@ -7,13 +7,21 @@ const playerSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  email: {
+    type: String,
+    required: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+  },
   age: {
     type: Number,
     required: true
   },
-  type: {
+  role: {
     type: String,
-    enum: ['batsman', 'bowler', 'all-rounder', 'wicket-keeper'],
+    enum: ['batsman', 'pace-bowler', 'medium-pace-bowler', 'spinner', 'batting all-rounder', 'bowling all-rounder', 'wicket-keeper'],
     required: true
   },
   battingStyle: {
@@ -27,6 +35,9 @@ const playerSchema = new mongoose.Schema({
            'left-arm-fast', 'left-arm-medium', 'left-arm-spin', 'none'],
     default: 'none'
   },
+
+  playingExperience: Number,
+
   country: {
     type: String,
     required: true
@@ -52,11 +63,14 @@ const playerSchema = new mongoose.Schema({
     strikeRate: { type: Number, default: 0 },
     economy: { type: Number, default: 0 }
   },
+
   contractEndDate: Date,
+
   available: {
-    type: Boolean, // ['available', 'sold', 'unsold']
+    type: Boolean,
     default: true,
-  }
+  },
+  description: String
 }, {
   timestamps: true
 });

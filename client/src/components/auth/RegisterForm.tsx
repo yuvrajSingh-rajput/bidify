@@ -118,7 +118,7 @@ const RegisterForm = () => {
         });
 
         // Redirect based on role
-        navigate(role === "admin" ? "/admin" : "/team");
+        navigate(role === "admin" ? "/dashboard" : "/my-team");
       } catch (error) {
         if (error instanceof AxiosError) {
           console.error('Registration error:', {
