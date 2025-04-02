@@ -1,0 +1,4 @@
+client/.env
+client/.env.development
+client/src/vite-env.d.ts
+server/.env
