@@ -1,14 +1,18 @@
 
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Auction } from "@/types";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Clock, User, DollarSign } from "lucide-react";
+import { CalendarIcon, Clock, User, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
+import PlayerRegistrationRequestForm from "./PlayerRegistrationRequestForm";
+import { useAuth } from "@/context/AuthContext";
 
 interface AuctionCardProps {
   auction: Auction;
+  showRegistrationForm?: boolean;
 }
 
 const getStatusColor = (status: Auction["status"]) => {
@@ -24,7 +28,11 @@ const getStatusColor = (status: Auction["status"]) => {
   }
 };
 
-const AuctionCard = ({ auction }: AuctionCardProps) => {
+const AuctionCard = ({ auction, showRegistrationForm = false }: AuctionCardProps) => {
+  const [showForm, setShowForm] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   return (
     <Card className="auction-card-gradient h-full overflow-hidden border-gray-200 transition-shadow hover:shadow-md">
       <CardHeader className="pb-4">
@@ -57,6 +65,24 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
           <DollarSign className="h-4 w-4" />
           <span>Base Budget: ₹{auction.baseBudget.toLocaleString()}</span>
         </div>
+        
+        {!isAdmin && showRegistrationForm && (
+          <div className="mt-4 border-t pt-4">
+            <div 
+              className="flex justify-between items-center cursor-pointer" 
+              onClick={() => setShowForm(!showForm)}
+            >
+              <h4 className="text-sm font-medium">Request to Join</h4>
+              {showForm ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </div>
+            
+            {showForm && (
+              <div className="mt-4">
+                <PlayerRegistrationRequestForm auction={auction} />
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
       <CardFooter className="pt-2">
         <Button asChild className="w-full">

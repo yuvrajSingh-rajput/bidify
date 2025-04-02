@@ -11,9 +11,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow, format } from "date-fns";
-import { Clock, Users, DollarSign, Trophy } from "lucide-react";
+import { Clock, Users, DollarSign, Trophy, Mail, X, Check, Eye } from "lucide-react";
 import PlayerCard from "@/components/players/PlayerCard";
 import ManageAuctionPlayersDialog from "@/components/admin/ManageAuctionPlayersDialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Mock data for auction details
 const mockAuction: Auction = {
@@ -447,11 +457,12 @@ const AuctionDetailPage = () => {
         )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 md:grid-cols-4 mb-6">
+          <TabsList className="grid grid-cols-3 md:grid-cols-5 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="players">Players</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="history">Bid History</TabsTrigger>
+            <TabsTrigger value="registration-request">Registration Request</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6">
@@ -662,6 +673,312 @@ const AuctionDetailPage = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="registration-request" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Player Registration Requests</CardTitle>
+                <CardDescription>
+                  Review and manage player registration requests for this auction.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* State to store registration requests */}
+                {/* This would typically be fetched from an API */}
+                {(() => {
+                  // Mock data for registration requests
+                  const registrationRequests = [
+                    {
+                      id: "req1",
+                      playerId: "player101",
+                      name: "John Smith",
+                      email: "john@example.com",
+                      phone: "+91 6307605959",
+                      date: new Date("2023-12-05T09:23:00"),
+                      status: "pending",
+                      message: "We're excited to participate in this year's auction.",
+                    },
+                    {
+                      id: "req2",
+                      playerId: "player102",
+                      name: "David Warner",
+                      email: "david@example.com",
+                      phone: "+91 9876543210",
+                      date: new Date("2023-12-06T14:45:00"),
+                      status: "approved",
+                      message: "Looking forward to competing in the auction.",
+                    },
+                    {
+                      id: "req3",
+                      playerId: "player103",
+                      name: "Virat Kohli",
+                      email: "virat@example.com",
+                      phone: "+91 7894561230",
+                      date: new Date("2023-12-07T11:30:00"),
+                      status: "rejected",
+                      message: "Application did not meet the eligibility criteria.",
+                    },
+                    {
+                      id: "req4",
+                      playerId: "player104",
+                      name: "Steve Smith",
+                      email: "steve@example.com",
+                      phone: "+91 8529637410",
+                      date: new Date("2023-12-08T17:10:00"),
+                      status: "pending",
+                      message: "Hoping for a chance to showcase my skills in the tournament.",
+                    },
+                  ];
+                  
+                  if (registrationRequests.length === 0) {
+                    return (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">No registration requests yet</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Requested</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {registrationRequests.map((request) => (
+                          <TableRow key={request.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback>{request.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <span>{request.name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{request.email}</TableCell>
+                            <TableCell>{request.phone}</TableCell>
+                            <TableCell>{formatDistanceToNow(request.date, { addSuffix: true })}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  request.status === "approved" ? "default" : 
+                                  request.status === "rejected" ? "destructive" : 
+                                  "outline"
+                                }
+                              >
+                                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Registration Request Details</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4 py-4">
+                                      <div className="flex items-center gap-2">
+                                        <Avatar className="h-10 w-10">
+                                          <AvatarFallback>{request.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <h4 className="font-semibold">{request.name}</h4>
+                                          <p className="text-sm text-muted-foreground">Email: {request.email}</p>
+                                        </div>
+                                        <Badge 
+                                          className="ml-auto"
+                                          variant={
+                                            request.status === "approved" ? "default" : 
+                                            request.status === "rejected" ? "destructive" : 
+                                            "outline"
+                                          }
+                                        >
+                                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="pt-2 border-t">
+                                        <h4 className="text-sm font-medium mb-1">Request Message:</h4>
+                                        <p className="text-sm">{request.message}</p>
+                                      </div>
+                                      
+                                      <div className="pt-2 border-t">
+                                        <h4 className="text-sm font-medium mb-1">Request Date:</h4>
+                                        <p className="text-sm">{format(request.date, "PPP 'at' h:mm a")}</p>
+                                      </div>
+                                    </div>
+                                    <DialogFooter>
+                                      {request.status === "pending" && (
+                                        <>
+                                          <Button 
+                                            variant="outline" 
+                                            onClick={() => {
+                                              toast({
+                                                title: "Request Rejected",
+                                                description: `${request.name}'s registration has been rejected.`,
+                                              });
+                                            }}
+                                          >
+                                            Reject
+                                          </Button>
+                                          <Button
+                                            onClick={() => {
+                                              toast({
+                                                title: "Request Approved",
+                                                description: `${request.name} has been added to the auction.`,
+                                              });
+                                            }}
+                                          >
+                                            Approve
+                                          </Button>
+                                        </>
+                                      )}
+                                      {request.status !== "pending" && (
+                                        <Button variant="outline">Close</Button>
+                                      )}
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                                
+                                {request.status === "pending" && (
+                                  <>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      onClick={() => {
+                                        toast({
+                                          title: "Request Approved",
+                                          description: `${request.name} has been added to the auction.`,
+                                        });
+                                      }}
+                                    >
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      onClick={() => {
+                                        toast({
+                                          title: "Request Rejected",
+                                          description: `${request.name}'s registration has been rejected.`,
+                                        });
+                                      }}
+                                    >
+                                      <X className="h-4 w-4 text-red-600" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+  
+            {user?.role === "admin" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invite Teams</CardTitle>
+                  <CardDescription>
+                    Send invitations to teams to join this auction
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a team to invite" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="team104">Sunrisers Hyderabad</SelectItem>
+                          <SelectItem value="team105">Gujarat Titans</SelectItem>
+                          <SelectItem value="team106">Lucknow Super Giants</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Invitation
+                    </Button>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <div className="text-sm font-medium mb-2">Recently Invited Teams</div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Team</TableHead>
+                          <TableHead>Invited On</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback>GT</AvatarFallback>
+                              </Avatar>
+                              <span>Gujarat Titans</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>2 days ago</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">Pending Response</Badge>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback>SH</AvatarFallback>
+                              </Avatar>
+                              <span>Sunrisers Hyderabad</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>3 days ago</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">Pending Response</Badge>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {user?.role === "teamOwner" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Registration Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center p-6 text-center">
+                    <Badge className="mb-4" variant="outline">Pending Approval</Badge>
+                    <p className="mb-4">Your registration request for this auction is being reviewed by the administrators.</p>
+                    <p className="text-sm text-muted-foreground">Request submitted 2 days ago</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
         

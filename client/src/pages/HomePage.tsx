@@ -1,9 +1,67 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle, Shield, Trophy } from "lucide-react";
 
+// Import components
+import { useEffect, useState } from "react";
+import { Auction } from "@/types";
+import PlayerRegistrationRequestForm from "@/components/auctions/PlayerRegistrationRequestForm";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
 const HomePage = () => {
+  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string>("");
+  
+  // Fetch auctions
+  useEffect(() => {
+    // This would normally be an API call
+    // For now, we'll use mock data
+    const mockAuctions: Auction[] = [
+      {
+        id: "1",
+        name: "IPL Season 2023",
+        description: "Annual player auction for IPL 2023 season",
+        startTime: new Date("2023-12-10T10:00:00"),
+        status: "upcoming",
+        basePlayerPrice: 2000000,
+        baseBudget: 80000000,
+        teams: ["1", "2", "3"],
+        players: ["1", "2", "3", "4", "5"],
+      },
+      {
+        id: "2",
+        name: "T20 World Cup Trials",
+        description: "Player selection auction for World Cup team",
+        startTime: new Date("2023-12-15T14:00:00"),
+        status: "live",
+        basePlayerPrice: 1000000,
+        baseBudget: 50000000,
+        teams: ["1", "4", "5"],
+        players: ["6", "7", "8", "9", "10"],
+        currentPlayerId: "6",
+      },
+      {
+        id: "3",
+        name: "County Cricket Draft",
+        description: "Player draft for county cricket tournament",
+        startTime: new Date("2023-11-05T09:00:00"),
+        endTime: new Date("2023-11-05T18:00:00"),
+        status: "completed",
+        basePlayerPrice: 500000,
+        baseBudget: 30000000,
+        teams: ["6", "7", "8"],
+        players: ["11", "12", "13", "14", "15"],
+      }
+    ];
+    
+    setAuctions(mockAuctions);
+    setSelectedAuctionId(mockAuctions[0].id);
+  }, []);
+
+  const selectedAuction = auctions.find(auction => auction.id === selectedAuctionId) || null;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
@@ -19,9 +77,43 @@ const HomePage = () => {
             <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
               <Link to="/register">Get Started</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-white text-white bg-blue-700 hover:bg-blue-500">
+            <Button asChild variant="outline" size="lg" className="border-white bg-blue-700 hover:bg-blue-500 text-white">
               <Link to="/login">Sign In</Link>
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Player Registration Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="max-w-xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Player Registration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <Label htmlFor="auction-select">Select Auction to Join</Label>
+                  <Select value={selectedAuctionId} onValueChange={setSelectedAuctionId}>
+                    <SelectTrigger id="auction-select" className="w-full">
+                      <SelectValue placeholder="Select an auction" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {auctions.map((auction) => (
+                        <SelectItem key={auction.id} value={auction.id}>
+                          {auction.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {selectedAuction && (
+                  <PlayerRegistrationRequestForm auction={selectedAuction} />
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

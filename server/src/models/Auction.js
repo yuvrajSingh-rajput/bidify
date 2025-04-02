@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+
 const bidSchema = new mongoose.Schema({
   team: {
     type: mongoose.Schema.Types.ObjectId,

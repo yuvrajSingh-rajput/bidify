@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -80,4 +81,15 @@ export interface Match {
   };
   result?: string;
   winnerId?: string;
+}
+
+export interface PlayerRegistrationRequest {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  auctionId: string;
+  message?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Date;
 }
