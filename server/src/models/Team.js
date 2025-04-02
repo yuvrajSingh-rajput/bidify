@@ -7,17 +7,20 @@ const teamSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  
   logo: {
     type: String,
     required: true
   },
+
   description: {
     type: String,
   },
+
   budget: {
     type: Number,
     required: true,
-    default: 80000000 // 8 crore default budget
+    default: 150000000 // 15 crore default budget
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

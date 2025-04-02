@@ -36,7 +36,10 @@ const playerSchema = new mongoose.Schema({
     default: 'none'
   },
 
-  playingExperience: Number,
+  playingExperience: {
+    type: Number,
+    default: 0,
+  },
 
   country: {
     type: String,
@@ -46,15 +49,18 @@ const playerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+
   purchasePrice: {
     type: Number,
     default: null
   },
+
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team',
     default: null
   },
+  
   stats: {
     matches: { type: Number, default: 0 },
     runs: { type: Number, default: 0 },
@@ -64,13 +70,17 @@ const playerSchema = new mongoose.Schema({
     economy: { type: Number, default: 0 }
   },
 
-  contractEndDate: Date,
+  contractEndDate: {
+    type: Date,
+  },
 
   available: {
     type: Boolean,
     default: true,
   },
-  description: String
+  description: {
+    type: String,
+  }
 }, {
   timestamps: true
 });
