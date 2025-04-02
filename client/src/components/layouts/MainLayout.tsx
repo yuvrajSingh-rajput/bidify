@@ -1,12 +1,11 @@
-
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/navigation/Navbar";
 import Sidebar from "@/components/navigation/Sidebar";
-
+import { Outlet } from "react-router-dom"; 
 interface MainLayoutProps {
-  children: ReactNode;
+  children?: ReactNode; 
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
@@ -20,6 +19,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <div className="flex">
         {user && <Sidebar />}
         <main className={`flex-1 p-4 md:p-6 ${user ? 'ml-0 md:ml-64' : ''}`}>
+          <Outlet /> 
           {children}
         </main>
       </div>

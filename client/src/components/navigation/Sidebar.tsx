@@ -53,14 +53,14 @@ const Sidebar = () => {
                 to={item.href}
                 className={cn(
                   "flex items-center p-2 text-base font-normal rounded-lg",
-                  location.pathname === item.href
+                  location.pathname.includes(item.href)
                     ? "text-white bg-bidfy-blue"
                     : "text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white"
                 )}
               >
                 <item.icon className={cn(
                   "w-5 h-5 transition duration-75",
-                  location.pathname === item.href
+                  location.pathname.includes(item.href)
                     ? "text-white"
                     : "text-gray-500 dark:text-gray-400 group-hover:text-gray-900"
                 )} />
