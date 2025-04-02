@@ -14,6 +14,7 @@ const PlayerRegistrationForm = () => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [role, setRole] = useState<Player["role"]>("Batsman");
+  const [basePrice, setBasePrice] = useState<number>(2000000);
   const [battingStyle, setBattingStyle] = useState<'right-handed' | 'left-handed'>('right-handed');
   const [bowlingStyle, setBowlingStyle] = useState<Player["bowlingStyle"]>("none");
   const [age, setAge] = useState("");
@@ -294,6 +295,17 @@ const PlayerRegistrationForm = () => {
                   placeholder="Strike rate"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="base-price">Base Price</Label>
+                <Input
+                  id="base-price"
+                  type="number"
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(Number(e.target.value))}
+                  min="0"
+                  placeholder="Base Price"
+                />
+              </div>
             </>
           )}
           
@@ -321,6 +333,17 @@ const PlayerRegistrationForm = () => {
                   onChange={(e) => setEconomy(e.target.value)}
                   min="0"
                   placeholder="Economy rate"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="base-price">Base Price</Label>
+                <Input
+                  id="base-price"
+                  type="number"
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(Number(e.target.value))}
+                  min="0"
+                  placeholder="Base Price"
                 />
               </div>
             </>

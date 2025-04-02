@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import cron from 'node-cron'; 
 
 const playerSchema = new mongoose.Schema({
-  name: {
+  playerName: {
     type: String,
     required: true,
     trim: true
@@ -19,10 +19,14 @@ const playerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  role: {
+  playerRole: {
     type: String,
     enum: ['batsman', 'pace-bowler', 'medium-pace-bowler', 'spinner', 'batting all-rounder', 'bowling all-rounder', 'wicket-keeper'],
     required: true
+  },
+  profilePhoto: {
+    type: String,
+    default: "https://media.istockphoto.com/id/1961226379/vector/cricket-player-playing-short-concept.jpg?s=612x612&w=0&k=20&c=CSiQd4qzLY-MB5o_anUOnwjIqxm7pP8aus-Lx74AQus="
   },
   battingStyle: {
     type: String,
@@ -50,16 +54,17 @@ const playerSchema = new mongoose.Schema({
     required: true
   },
 
-  purchasePrice: {
-    type: Number,
-    default: null
-  },
-
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
-    default: null
-  },
+  playingHistory: [{
+    teamName: {
+      type: String,
+    },
+    year: {
+      type: Date,
+    },
+    purchasePrice: {
+      type: Number
+    }
+  }],
   
   stats: {
     matches: { type: Number, default: 0 },

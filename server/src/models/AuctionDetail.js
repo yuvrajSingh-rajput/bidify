@@ -22,11 +22,13 @@ const auctionDetailSchema = new mongoose.Schema({
     ref: 'Player',
     required: true
   },
-  status: {
+  
+  playerStatus: {
     type: String,
-    enum: ['pending', 'active', 'completed', 'cancelled'],
-    default: 'pending'
+    enum: ["sold", "unsold", "available"],
+    default: "available",
   },
+
   startTime: {
     type: Date
   },

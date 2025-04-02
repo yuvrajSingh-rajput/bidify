@@ -1,40 +1,41 @@
 import mongoose from 'mongoose';
 
 const teamSchema = new mongoose.Schema({
-  name: {
+  teamName: {
     type: String,
     required: true,
     unique: true,
     trim: true
   },
   
-  logo: {
+  teamLogo: {
     type: String,
-    required: true
+    default: "https://t3.ftcdn.net/jpg/05/13/39/96/360_F_513399651_7X6aDPItRkVK4RtrysnGF8A88Gyfes3T.jpg"
   },
 
-  description: {
+  teamDescription: {
     type: String,
   },
 
   budget: {
     type: Number,
-    required: true,
-    default: 150000000 // 15 crore default budget
+    default: 150000000 
   },
+
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
+  
   players: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Player'
   }],
+
   remainingBudget: {
     type: Number,
-    required: true,
-    default: 80000000
+    default: 150000000
   }
 }, {
   timestamps: true

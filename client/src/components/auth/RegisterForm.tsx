@@ -297,23 +297,6 @@ const RegisterForm = () => {
                   )}
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="teamBudget">Initial Budget (₹)</Label>
-                <Input
-                  id="teamBudget"
-                  type="number"
-                  value={teamBudget}
-                  onChange={(e) => setTeamBudget(e.target.value)}
-                  min={1000000}
-                  max={100000000}
-                  step={1000000}
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">
-                  Default budget is set by the auction rules.
-                </p>
-              </div>
             </div>
           </>
         )}

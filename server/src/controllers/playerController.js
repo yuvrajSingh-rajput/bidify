@@ -2,7 +2,7 @@ import Player from '../models/Player.js';
 
 export const createPlayer = async (req, res) => {
   try {
-    const player = new Player(req.body);
+    const {} = req.body;
     await player.save();
     res.status(201).json(player);
   } catch (error) {
