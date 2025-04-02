@@ -1,13 +1,13 @@
 import express from 'express';
-import { createAuction, getAuctions, getAuction, startAuction, cancelAuction } from '../controllers/auctionController.js';
+import { createAuctionDetail, startAuctionDetail, getAuctionDetail, cancelAuctionDetail, getAuctionDetails } from '../controllers/auctionController.js';
 import { auth, adminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/', auth, adminOnly, createAuction);
-router.get('/', auth, getAuctions);
-router.get('/:id', auth, getAuction);
-router.post('/:id/start', auth, adminOnly, startAuction);
-router.post('/:id/cancel', auth, adminOnly, cancelAuction);
+router.post('/', auth, adminOnly, createAuctionDetail);
+router.get('/', auth, getAuctionDetails);
+router.get('/:id', auth, getAuctionDetail);
+router.post('/:id/start', auth, adminOnly, startAuctionDetail);
+router.post('/:id/cancel', auth, adminOnly, cancelAuctionDetail);
 
 export default router;

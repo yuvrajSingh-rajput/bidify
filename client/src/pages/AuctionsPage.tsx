@@ -290,7 +290,170 @@ const AuctionsPage = () => {
       <div className="mt-16 md:mt-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h1 className="text-2xl font-bold mb-4 sm:mb-0">Auctions</h1>
+          
+          {user?.role === "admin" && (
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>Create Auction</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Auction</DialogTitle>
+                  <DialogDescription>
+                    Enter the details for your new player auction.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Auction Name</Label>
+                    <Input
+                      id="name"
+                      placeholder="IPL 2023 Auction"
+                      value={newAuctionName}
+                      onChange={(e) => setNewAuctionName(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      placeholder="Annual player auction for IPL 2023 season"
+                      value={newAuctionDescription}
+                      onChange={(e) => setNewAuctionDescription(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Date</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={newAuctionDate}
+                        onChange={(e) => setNewAuctionDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="time">Time</Label>
+                      <Input
+                        id="time"
+                        type="time"
+                        value={newAuctionTime}
+                        onChange={(e) => setNewAuctionTime(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="basePrice">Base Player Price (₹)</Label>
+                    <Input
+                      id="basePrice"
+                      type="number"
+                      placeholder="2000000"
+                      value={newAuctionBasePrice}
+                      onChange={(e) => setNewAuctionBasePrice(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="baseBudget">Base Team Budget (₹)</Label>
+                    <Input
+                      id="baseBudget"
+                      type="number"
+                      placeholder="80000000"
+                      value={newAuctionBaseBudget}
+                      onChange={(e) => setNewAuctionBaseBudget(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateAuction}>Create Auction</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
+
+        {/* Player Selection Dialog */}
+        <Dialog open={isPlayerSelectionOpen} onOpenChange={(open) => {
+          if (!open) {
+            setSelectedPlayers([]);
+            setCreatedAuctionId(null);
+          }
+          setIsPlayerSelectionOpen(open);
+        }}>
+          <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Select Players for Auction</DialogTitle>
+              <DialogDescription>
+                Choose which players to include in this auction pool.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">Select</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Base Price</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {availablePlayers.map((player) => (
+                    <TableRow key={player.id} className="cursor-pointer hover:bg-gray-100" onClick={() => togglePlayerSelection(player.id)}>
+                      <TableCell className="text-center">
+                        {selectedPlayers.includes(player.id) ? 
+                          <Check className="h-5 w-5 text-green-600 mx-auto" /> : 
+                          <X className="h-5 w-5 text-gray-300 mx-auto" />
+                        }
+                      </TableCell>
+                      <TableCell>{player.name}</TableCell>
+                      <TableCell>{player.role}</TableCell>
+                      <TableCell>₹{player.basePrice.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={player.status === "available" ? "outline" : "secondary"}>
+                          {player.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            
+            <div className="flex justify-between items-center pt-2">
+              <div className="text-sm text-muted-foreground">
+                {selectedPlayers.length} players selected
+              </div>
+              <DialogFooter className="sm:justify-end">
+                <Button variant="outline" onClick={() => setIsPlayerSelectionOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={finalizePlayerSelection} disabled={selectedPlayers.length === 0}>
+                  Add Players to Auction
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Player Registration Requests Dialog */}
+        {selectedAuction && (
+          <PlayerRegistrationRequestsDialog
+            open={isRequestsDialogOpen}
+            onOpenChange={setIsRequestsDialogOpen}
+            auctionId={selectedAuction.id}
+          />
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -321,9 +484,90 @@ const AuctionsPage = () => {
         {filteredAuctions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAuctions.map((auction) => (
-              <div key={auction.id} className="flex flex-col h-full">
-                <AuctionCard auction={auction} />
-              </div>
+              <Card key={auction.id} className="flex flex-col h-full">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle>{auction.name}</CardTitle>
+                      <CardDescription>{auction.description || "No description available"}</CardDescription>
+                    </div>
+                    <Badge 
+                      variant={
+                        auction.status === "live" 
+                          ? "default" 
+                          : auction.status === "upcoming" 
+                            ? "outline" 
+                            : "secondary"
+                      }
+                    >
+                      {auction.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <AuctionCard auction={auction} />
+                </CardContent>
+                
+                {user?.role === "admin" && (
+                  <CardFooter className="flex-col gap-4 pt-0">
+                    <div className="flex justify-between w-full">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setCreatedAuctionId(auction.id);
+                          setIsPlayerSelectionOpen(true);
+                          // Initialize with already selected players
+                          setSelectedPlayers(auction.players || []);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Manage Players
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAuction(auction);
+                          setIsRequestsDialogOpen(true);
+                        }}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Registration Requests
+                      </Button>
+                    </div>
+                    
+                    <Tabs defaultValue="teams" className="w-full">
+                      <TabsList className="grid grid-cols-2">
+                        <TabsTrigger value="teams">
+                          <Users className="h-4 w-4 mr-2" />
+                          Teams
+                        </TabsTrigger>
+                        <TabsTrigger value="details">
+                          <CalendarDays className="h-4 w-4 mr-2" />
+                          Details
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="teams">
+                        <div className="max-h-60 overflow-y-auto">
+                          <RegisteredTeamsList teams={getAuctionTeams(auction.id)} />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="details">
+                        <div className="space-y-2 text-sm">
+                          <p><strong>Start Time:</strong> {auction.startTime.toLocaleString()}</p>
+                          <p><strong>Base Price:</strong> ₹{auction.basePlayerPrice.toLocaleString()}</p>
+                          <p><strong>Budget/Team:</strong> ₹{auction.baseBudget.toLocaleString()}</p>
+                          <p><strong>Players:</strong> {auction.players?.length || 0}</p>
+                          <p><strong>Teams:</strong> {auction.teams.length}</p>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </CardFooter>
+                )}
+              </Card>
             ))}
           </div>
         ) : (

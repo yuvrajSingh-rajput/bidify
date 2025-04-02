@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import Auction from '../models/Auction.js';
+import AuctionDetail from '../models/AuctionDetail.js';
 import Team from '../models/Team.js';
 
 export const setupSocketHandlers = (io) => {
@@ -24,52 +24,52 @@ export const setupSocketHandlers = (io) => {
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.user.name}`);
 
-    // Join auction room
-    socket.on('join-auction', async (auctionId) => {
+    // Join AuctionDetail room
+    socket.on('join-AuctionDetail', async (AuctionDetailId) => {
       try {
-        const auction = await Auction.findById(auctionId)
+        const AuctionDetail = await AuctionDetail.findById(AuctionDetailId)
           .populate('player')
           .populate('currentHighestBidder');
         
-        if (!auction) throw new Error('Auction not found');
+        if (!AuctionDetail) throw new Error('AuctionDetail not found');
         
-        socket.join(auctionId);
-        socket.emit('auction-state', auction);
+        socket.join(AuctionDetailId);
+        socket.emit('AuctionDetail-state', AuctionDetail);
       } catch (error) {
         socket.emit('error', error.message);
       }
     });
 
     // Place bid
-    socket.on('place-bid', async ({ auctionId, amount }) => {
+    socket.on('place-bid', async ({ AuctionDetailId, amount }) => {
       try {
-        const auction = await Auction.findById(auctionId);
-        if (!auction) throw new Error('Auction not found');
-        if (auction.status !== 'active') throw new Error('Auction is not active');
+        const AuctionDetail = await AuctionDetail.findById(AuctionDetailId);
+        if (!AuctionDetail) throw new Error('AuctionDetail not found');
+        if (AuctionDetail.status !== 'active') throw new Error('AuctionDetail is not active');
 
         const team = await Team.findOne({ owner: socket.user._id });
         if (!team) throw new Error('Team not found');
         if (team.remainingBudget < amount) throw new Error('Insufficient budget');
 
-        await auction.placeBid(team._id, amount);
+        await AuctionDetail.placeBid(team._id, amount);
         
-        // Broadcast updated auction state
-        io.to(auctionId).emit('auction-state', await auction.populate('currentHighestBidder'));
+        // Broadcast updated AuctionDetail state
+        io.to(AuctionDetailId).emit('AuctionDetail-state', await AuctionDetail.populate('currentHighestBidder'));
         
-        // Extend auction time
-        clearTimeout(auction.timeoutId);
-        auction.timeoutId = setTimeout(async () => {
-          await auction.complete();
-          io.to(auctionId).emit('auction-completed', auction);
+        // Extend AuctionDetail time
+        clearTimeout(AuctionDetail.timeoutId);
+        AuctionDetail.timeoutId = setTimeout(async () => {
+          await AuctionDetail.complete();
+          io.to(AuctionDetailId).emit('AuctionDetail-completed', AuctionDetail);
         }, 30000);
       } catch (error) {
         socket.emit('error', error.message);
       }
     });
 
-    // Leave auction room
-    socket.on('leave-auction', (auctionId) => {
-      socket.leave(auctionId);
+    // Leave AuctionDetail room
+    socket.on('leave-AuctionDetail', (AuctionDetailId) => {
+      socket.leave(AuctionDetailId);
     });
 
     socket.on('disconnect', () => {
