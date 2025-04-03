@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +9,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Player } from "@/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Upload, Image } from "lucide-react";
 
 const PlayerRegistrationForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [role, setRole] = useState<Player["role"]>("Batsman");
-  const [basePrice, setBasePrice] = useState<number>(2000000);
   const [battingStyle, setBattingStyle] = useState<'right-handed' | 'left-handed'>('right-handed');
   const [bowlingStyle, setBowlingStyle] = useState<Player["bowlingStyle"]>("none");
   const [age, setAge] = useState("");
@@ -22,6 +24,9 @@ const PlayerRegistrationForm = () => {
   const [playingExperience, setPlayingExperience] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [basePrice, setBasePrice] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   
   // Cricket stats
   const [matches, setMatches] = useState("");
@@ -32,6 +37,22 @@ const PlayerRegistrationForm = () => {
   const [economy, setEconomy] = useState("");
   
   const { toast } = useToast();
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfilePhoto(file);
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setPhotoPreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +104,9 @@ const PlayerRegistrationForm = () => {
       setAverage("");
       setStrikeRate("");
       setEconomy("");
+      setBasePrice("");
+      setProfilePhoto(null);
+      setPhotoPreview(null);
       setTermsAccepted(false);
       
     } catch (error) {
@@ -162,6 +186,19 @@ const PlayerRegistrationForm = () => {
         </div>
         
         <div className="space-y-2">
+          <Label htmlFor="basePrice">Base Price (₹)</Label>
+          <Input
+            id="basePrice"
+            type="number"
+            value={basePrice}
+            onChange={(e) => setBasePrice(e.target.value)}
+            required
+            min="1000"
+            placeholder="Your expected base price"
+          />
+        </div>
+        
+        <div className="space-y-2">
           <Label htmlFor="role">Playing Role</Label>
           <Select 
             value={role} 
@@ -237,6 +274,44 @@ const PlayerRegistrationForm = () => {
             </Select>
           </div>
         )}
+        
+        <div className="col-span-1 md:col-span-2 space-y-2">
+          <Label htmlFor="profilePhoto">Profile Photo</Label>
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-20 w-20 border-2 border-gray-200">
+              {photoPreview ? (
+                <AvatarImage src={photoPreview} alt="Profile preview" />
+              ) : (
+                <AvatarFallback>
+                  <Image className="h-12 w-12 text-gray-400" />
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex-1">
+              <Input
+                id="profilePhoto"
+                type="file"
+                onChange={handlePhotoChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('profilePhoto')?.click()}
+                className="w-full md:w-auto"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {profilePhoto ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+              {profilePhoto && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {profilePhoto.name} ({(profilePhoto.size / 1024).toFixed(1)} KB)
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Cricket Statistics Section */}
@@ -295,17 +370,6 @@ const PlayerRegistrationForm = () => {
                   placeholder="Strike rate"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="base-price">Base Price</Label>
-                <Input
-                  id="base-price"
-                  type="number"
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(Number(e.target.value))}
-                  min="0"
-                  placeholder="Base Price"
-                />
-              </div>
             </>
           )}
           
@@ -333,17 +397,6 @@ const PlayerRegistrationForm = () => {
                   onChange={(e) => setEconomy(e.target.value)}
                   min="0"
                   placeholder="Economy rate"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="base-price">Base Price</Label>
-                <Input
-                  id="base-price"
-                  type="number"
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(Number(e.target.value))}
-                  min="0"
-                  placeholder="Base Price"
                 />
               </div>
             </>
