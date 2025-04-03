@@ -10,6 +10,7 @@ const playerSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   phone: {
     type: String,
@@ -99,7 +100,7 @@ const updatePlayerAvailability = async () => {
       const now = new Date();
       const result = await Player.updateMany(
           { contractEndDate: { $lte: now }, available: false },
-          { $set: { status: true } }
+          { $set: { available: true } }
       );
       console.log(`Updated ${result.modifiedCount} players to available.`);
   } catch (error) {

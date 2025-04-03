@@ -1,12 +1,71 @@
 import Player from '../models/Player.js';
+import { uploadMedia } from '../utils/cloudinary.js';
 
 export const createPlayer = async (req, res) => {
   try {
-    const {} = req.body;
+    const {
+      playerName, 
+      email,
+      phone,
+      age, 
+      playerRole,
+      battingStyle, 
+      bowlingStyle,
+      playingExperience,
+      country,
+      basePrice,
+      matches,
+      runs,
+      wickets,
+      average,
+      strikeRate,
+      economy,
+      bio
+    } = req.body;
+
+    const existingPlayer = await Player.findOne({email});
+    if(existingPlayer){
+      return res.json(400).json({
+        error: "player already exists",
+      });
+    }
+    const profileImage = req.file;
+    const profilePhoto = "https://media.istockphoto.com/id/1961226379/vector/cricket-player-playing-short-concept.jpg?s=612x612&w=0&k=20&c=CSiQd4qzLY-MB5o_anUOnwjIqxm7pP8aus-Lx74AQus=";
+    if(profileImage){
+      const cloudResponse = await uploadMedia(profileImage.path);
+      profilePhoto = cloudResponse.secure_url;
+    }
+    const playerData = {
+      playerName: playerName, 
+      email: email,
+      phone: phone,
+      age: age, 
+      playerRole: playerRole,
+      battingStyle: battingStyle, 
+      bowlingStyle: bowlingStyle,
+      playingExperience: playingExperience,
+      country: country,
+      basePrice: basePrice,
+      stats: {
+        matches: matches,
+        runs: runs,
+        wickets: wickets,
+        average: average,
+        strikeRate: strikeRate,
+        economy: economy,
+      },
+      description: bio,
+      profilePhoto: profilePhoto,
+    }
+    const player = new Player(playerData);
     await player.save();
-    res.status(201).json(player);
+    return res.status(201).json({
+      success: true, 
+      message: "player added successfully!",
+      player  
+    });    
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: "internal server error" });
   }
 };
 
