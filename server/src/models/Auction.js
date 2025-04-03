@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+const handlePlayerSchema = new mongoose.Schema({
+    player: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Player',
+        default: null,
+    },
+    status: {
+        type: String,
+        enum: ['available', 'sold', 'unsold'],
+        default: 'available',
+    }
+}, {
+    timestamps: true,
+});
+
 const auctionSchema = new mongoose.Schema({
     auctionName: {
         type: String,
@@ -26,9 +41,12 @@ const auctionSchema = new mongoose.Schema({
     auctionEndTime: {
         type: String,
     },
-    auctions: [{
+
+    players: [handlePlayerSchema],
+
+    teams: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'AuctionDetail'
+        ref: 'Team',
     }],
     playerBasePrice: {
         type: Number,
@@ -43,25 +61,19 @@ const auctionSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Middleware to set auctionEndTime automatically
 auctionSchema.pre("save", function (next) {
     if (this.auctionStartTime) {
-        // Extract hours, minutes, and period (AM/PM)
         const [time, period] = this.auctionStartTime.split(" ");
         let [hours, minutes] = time.split(":").map(Number);
         
-        // Convert to 24-hour format for calculations
         if (period === "PM" && hours !== 12) hours += 12;
         if (period === "AM" && hours === 12) hours = 0;
 
-        // Add 12 hours
         hours = (hours + 12) % 24;
 
-        // Convert back to 12-hour format
         let newPeriod = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12 || 12; // Convert 0 to 12 for AM format
+        hours = hours % 12 || 12; 
 
-        // Format the end time
         this.auctionEndTime = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${newPeriod}`;
     }
     next();

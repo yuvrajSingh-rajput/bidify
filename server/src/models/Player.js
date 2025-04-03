@@ -74,17 +74,19 @@ const playerSchema = new mongoose.Schema({
     strikeRate: { type: Number, default: 0 },
     economy: { type: Number, default: 0 }
   },
-
   contractEndDate: {
     type: Date,
   },
-
   available: {
     type: Boolean,
     default: true,
   },
   description: {
     type: String,
+  },
+  currentAuctionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auction',
   }
 }, {
   timestamps: true

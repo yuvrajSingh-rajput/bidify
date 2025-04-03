@@ -22,15 +22,13 @@ const auctionDetailSchema = new mongoose.Schema({
     ref: 'Player',
     required: true
   },
-  
   playerStatus: {
     type: String,
     enum: ["sold", "unsold", "available"],
     default: "available",
   },
-
   startTime: {
-    type: Date
+    type: Date,
   },
   endTime: {
     type: Date
@@ -59,7 +57,6 @@ const auctionDetailSchema = new mongoose.Schema({
 
 // Method to place a bid
 auctionDetailSchema.methods.placeBid = async function(team, amount) {
-  // Validate bid amount
   if (amount <= this.currentBid) {
     throw new Error('Bid amount must be higher than current bid');
   }
@@ -69,38 +66,49 @@ auctionDetailSchema.methods.placeBid = async function(team, amount) {
   this.currentBid = amount;
   this.currentHighestBidder = team;
 
-  // Reset end time (extend auctionDetail by 30 seconds after each bid)
-  this.endTime = new Date(Date.now() + 30000);
+  // Extend auction only if it's still active
+  if (this.endTime > Date.now()) {
+    this.endTime = new Date(Date.now() + 30000);
+  }
 
   await this.save();
   return this;
 };
 
-// Method to complete auctionDetail
+// Method to complete auction
 auctionDetailSchema.methods.complete = async function() {
+  const Player = mongoose.model('Player');
+  const Team = mongoose.model('Team');
+
+  const player = await Player.findById(this.player);
+  
   if (this.currentHighestBidder) {
-    this.status = 'completed';
+    this.playerStatus = 'sold';
     this.winningBid = {
       team: this.currentHighestBidder,
       amount: this.currentBid
     };
 
-    // Update player status
-    const player = await mongoose.model('Player').findById(this.player);
-    player.status = 'sold';
-    player.team = this.currentHighestBidder;
-    player.purchasePrice = this.currentBid;
-    await player.save();
+    if (player) {
+      player.status = 'sold';
+      player.team = this.currentHighestBidder;
+      player.purchasePrice = this.currentBid;
+      await player.save();
+    }
 
-    // Update team's remaining budget
-    const team = await mongoose.model('Team').findById(this.currentHighestBidder);
-    team.players.push(this.player);
-    await team.updateRemainingBudget();
+    const team = await Team.findById(this.currentHighestBidder);
+    if (team) {
+      team.players.push(this.player);
+      if (typeof team.updateRemainingBudget === "function") {
+        await team.updateRemainingBudget();
+      }
+    }
   } else {
-    this.status = 'cancelled';
-    const player = await mongoose.model('Player').findById(this.player);
-    player.status = 'unsold';
-    await player.save();
+    this.playerStatus = 'unsold';
+    if (player) {
+      player.status = 'unsold';
+      await player.save();
+    }
   }
 
   await this.save();
