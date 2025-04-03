@@ -1,5 +1,7 @@
 import Player from '../models/Player.js';
-import { uploadMedia } from '../utils/cloudinary.js';
+import { deleteMediaFromCloudinary, uploadMedia } from '../utils/cloudinary.js';
+
+const defaultProfilePhoto = "https://media.istockphoto.com/id/1961226379/vector/cricket-player-playing-short-concept.jpg?s=612x612&w=0&k=20&c=CSiQd4qzLY-MB5o_anUOnwjIqxm7pP8aus-Lx74AQus=";
 
 export const createPlayer = async (req, res) => {
   try {
@@ -30,7 +32,7 @@ export const createPlayer = async (req, res) => {
       });
     }
     const profileImage = req.file;
-    const profilePhoto = "https://media.istockphoto.com/id/1961226379/vector/cricket-player-playing-short-concept.jpg?s=612x612&w=0&k=20&c=CSiQd4qzLY-MB5o_anUOnwjIqxm7pP8aus-Lx74AQus=";
+    const profilePhoto = defaultProfilePhoto;
     if(profileImage){
       const cloudResponse = await uploadMedia(profileImage.path);
       profilePhoto = cloudResponse.secure_url;
@@ -65,42 +67,31 @@ export const createPlayer = async (req, res) => {
       player  
     });    
   } catch (error) {
-    res.status(500).json({ error: "internal server error" });
+    return res.status(500).json({ error: "internal server error" });
   }
 };
 
-export const getPlayers = async (req, res) => {
+export const getAllPlayers = async (req, res) => {
   try {
-    const filters = {};
-    
-    // Apply filters if provided
-    if (req.query.status) filters.status = req.query.status;
-    if (req.query.type) filters.type = req.query.type;
-    if (req.query.team) filters.team = req.query.team;
-    
-    const players = await Player.find(filters)
-      .populate('team', 'name logo')
-      .sort({ createdAt: -1 });
-    
-    res.json(players);
+    const players = await Player.find({});
+    return res.status(200).json(players);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(500).json({ error: "internal server error" });
   }
 };
 
 export const getPlayer = async (req, res) => {
   try {
     const playerId = req.params.id;
-    const player = await Player.findById(playerId)
-      .populate('team', 'name logo');
+    const player = await Player.findById(playerId);
     
     if (!player) {
       return res.status(404).json({ error: 'Player not found' });
     }
     
-    res.json(player);
+    return res.status(200).json(player);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
 
@@ -111,21 +102,43 @@ export const updatePlayer = async (req, res) => {
       return res.status(404).json({ error: 'Player not found' });
     }
 
-    // Update allowed fields
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['name', 'age', 'type', 'battingStyle', 'bowlingStyle', 
-                           'country', 'basePrice', 'stats', 'status'];
-    
-    updates.forEach(update => {
-      if (allowedUpdates.includes(update)) {
-        player[update] = req.body[update];
-      }
-    });
+    const {
+      playerName, 
+      country, 
+      playerRole, 
+      basePrice,
+      matches, 
+      runs, 
+      wickets, 
+      average,
+      economy,
+      strikeRate,
+    } = req.body;
 
+    if (playerName) player.playerName = playerName;
+    if (country) player.country = country;
+    if (playerRole) player.playerRole = playerRole;
+    if (basePrice) player.basePrice = basePrice;
+    if (matches !== undefined) player.stats.matches = matches;
+    if (runs !== undefined) player.stats.runs = runs;
+    if (wickets !== undefined) player.stats.wickets = wickets;
+    if (average !== undefined) player.stats.average = average;
+    if (economy !== undefined) player.stats.economy = economy;
+    if (strikeRate !== undefined) player.stats.strikeRate = strikeRate;
+    
+    const profileImage = req.file;
+    if(player.profilePhoto != defaultProfilePhoto && profileImage){
+      const publicId = user.imageUrl.split("/").pop().split(".")[0];
+      deleteMediaFromCloudinary(publicId);
+
+      const cloudResponse = await uploadMedia(profileImage.path);
+      player.profilePhoto = cloudResponse.secure_url;
+    }
+  
     await player.save();
-    res.json(player);
+    return res.status(200).json(player);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(500).json({ error: "internal server error" });
   }
 };
 
@@ -136,14 +149,14 @@ export const deletePlayer = async (req, res) => {
       return res.status(404).json({ error: 'Player not found' });
     }
 
-    // Only allow deletion if player is not sold
-    if (player.status === 'sold') {
+    // Only allow deletion if player is available
+    if (player.available) {
       return res.status(400).json({ error: 'Cannot delete sold player' });
     }
 
     await player.remove();
-    res.json({ message: 'Player deleted successfully' });
+    return res.status(200).json({ message: 'Player deleted successfully' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(500).json({ error: "internal server error" });
   }
 };

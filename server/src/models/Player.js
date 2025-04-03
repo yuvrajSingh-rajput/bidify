@@ -108,10 +108,25 @@ const updatePlayerAvailability = async () => {
   }
 };
 
+const incrementPlayerAge = async () => {
+  try {
+    const result = await Player.updateMany({}, { $inc: { age: 1 } }); // Increment age by 1
+    console.log(`Incremented age for ${result.modifiedCount} players.`);
+  } catch (error) {
+    console.error('Error incrementing player age:', error);
+  }
+};
+
 // Schedule the job to run every midnight
 cron.schedule('0 0 * * *', () => {
   console.log('Running scheduled job to update player availability...');
   updatePlayerAvailability();
+});
+
+// Run every year on January 1st at midnight to increase age
+cron.schedule('0 0 1 1 *', () => {
+  console.log('Running scheduled job to increment players\' age...');
+  incrementPlayerAge();
 });
 
 export default Player;
