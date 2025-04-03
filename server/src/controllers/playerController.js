@@ -90,7 +90,8 @@ export const getPlayers = async (req, res) => {
 
 export const getPlayer = async (req, res) => {
   try {
-    const player = await Player.findById(req.params.id)
+    const playerId = req.params.id;
+    const player = await Player.findById(playerId)
       .populate('team', 'name logo');
     
     if (!player) {
