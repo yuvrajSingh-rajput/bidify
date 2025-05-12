@@ -99,6 +99,12 @@ const RegisterForm = () => {
 
       try {
         // Register user
+        console.log(formData);
+        // Instead of console.log(formData)
+        // Add this before your API call to see what's being sent
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ': ' + pair[1]);
+        }
         const response = await api.post('/auth/register', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -249,7 +255,7 @@ const RegisterForm = () => {
                   id="teamName"
                   placeholder="Super Kings"
                   value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
+                  onChange={(e) => setTeamName(e.target.value)} 
                   required
                 />
               </div>

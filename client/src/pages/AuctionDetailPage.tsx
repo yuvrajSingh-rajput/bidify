@@ -15,6 +15,7 @@ import { Clock, Users, DollarSign, Trophy, Mail, X, Check, Eye } from "lucide-re
 import PlayerCard from "@/components/players/PlayerCard";
 import ManageAuctionPlayersDialog from "@/components/admin/ManageAuctionPlayersDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import LiveBidding from "@/components/auctions/LiveBidding";
 import {
   Dialog,
   DialogContent,
@@ -25,17 +26,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// Mock data for auction details
 const mockAuction: Auction = {
   id: "1",
   name: "IPL Season 2023",
   description: "Annual player auction for IPL 2023 season",
   startTime: new Date("2023-12-10T10:00:00"),
-  status: "upcoming",
+  status: "live",
   basePlayerPrice: 2000000,
   baseBudget: 80000000,
   teams: ["1", "2", "3"],
   players: ["1", "2", "3", "4", "5"],
+  currentPlayerId: "3",
 };
 
 const mockPlayers: Player[] = [
@@ -165,6 +166,11 @@ const AuctionDetailPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isManagePlayersOpen, setIsManagePlayersOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  
+  const [currentBidAmount, setCurrentBidAmount] = useState<number>(0);
+  const [currentBiddingTeam, setCurrentBiddingTeam] = useState<string | null>(null);
+  const [playerBids, setPlayerBids] = useState<Bid[]>([]);
+  const [timeLeft, setTimeLeft] = useState<number>(30);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -177,7 +183,25 @@ const AuctionDetailPage = () => {
         
         if (mockAuction.status === "live" && mockAuction.currentPlayerId) {
           const player = mockPlayers.find(p => p.id === mockAuction.currentPlayerId);
-          if (player) setCurrentPlayer(player);
+          if (player) {
+            setCurrentPlayer(player);
+            setCurrentBidAmount(player.basePrice);
+            
+            const playerActiveBids = mockBids.filter(
+              b => b.playerId === player.id && b.auctionId === mockAuction.id
+            );
+            
+            setPlayerBids(playerActiveBids);
+            setTimeLeft(30);
+            
+            if (playerActiveBids.length > 0) {
+              const sortedBids = [...playerActiveBids].sort((a, b) => b.amount - a.amount);
+              if (sortedBids[0]) {
+                setCurrentBidAmount(sortedBids[0].amount);
+                setCurrentBiddingTeam(sortedBids[0].teamId);
+              }
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching auction data:", error);
@@ -193,6 +217,13 @@ const AuctionDetailPage = () => {
 
     fetchData();
   }, [id, toast]);
+  
+  const resetBiddingState = (player: Player) => {
+    setCurrentBidAmount(player.basePrice);
+    setPlayerBids([]);
+    setTimeLeft(30);
+    setCurrentBiddingTeam(null);
+  };
 
   const handlePlayersUpdate = (updatedPlayers: Player[]) => {
     setPlayers(updatedPlayers);
@@ -205,13 +236,16 @@ const AuctionDetailPage = () => {
   const handleStartAuction = () => {
     if (!auction) return;
     
+    const firstPlayer = players[0];
+    
     setAuction({
       ...auction,
       status: "live",
-      currentPlayerId: players[0]?.id,
+      currentPlayerId: firstPlayer.id,
     });
     
-    setCurrentPlayer(players[0]);
+    setCurrentPlayer(firstPlayer);
+    resetBiddingState(firstPlayer);
     
     toast({
       title: "Auction Started",
@@ -240,6 +274,47 @@ const AuctionDetailPage = () => {
   const handleNextPlayer = () => {
     if (!auction || !currentPlayer) return;
     
+    if (currentBiddingTeam && playerBids.length > 0) {
+      const teamId = currentBiddingTeam;
+      const soldPrice = currentBidAmount;
+      
+      const updatedPlayers = players.map(p => 
+        p.id === currentPlayer.id ? 
+          { ...p, status: "sold" as const, teamId, soldPrice } : 
+          p
+      );
+      setPlayers(updatedPlayers);
+      
+      const winningBid: Bid = {
+        id: `bid-${Date.now()}`,
+        auctionId: auction.id,
+        playerId: currentPlayer.id,
+        teamId,
+        amount: soldPrice,
+        timestamp: new Date(),
+        status: "won",
+      };
+      
+      const updatedBids = playerBids.map(bid => ({
+        ...bid,
+        status: "outbid" as const
+      }));
+      
+      setBids([...bids, ...updatedBids, winningBid]);
+      
+      const updatedTeams = teams.map(team => {
+        if (team.id === teamId) {
+          return {
+            ...team,
+            budgetSpent: team.budgetSpent + soldPrice,
+            players: [...team.players, currentPlayer.id]
+          };
+        }
+        return team;
+      });
+      setTeams(updatedTeams);
+    }
+    
     const currentIndex = players.findIndex(p => p.id === currentPlayer.id);
     if (currentIndex === -1 || currentIndex === players.length - 1) {
       handleEndAuction();
@@ -254,10 +329,57 @@ const AuctionDetailPage = () => {
     });
     
     setCurrentPlayer(nextPlayer);
+    resetBiddingState(nextPlayer);
     
     toast({
       title: "Next Player",
       description: `Now bidding for ${nextPlayer.name}`,
+    });
+  };
+  
+  const handlePlaceBid = (amount: number) => {
+    if (!currentPlayer || !auction || !user?.teamId) return;
+    
+    const team = teams.find(t => t.id === user.teamId);
+    if (!team) {
+      toast({
+        title: "Error",
+        description: "Your team information could not be found.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const remainingBudget = team.budget - team.budgetSpent;
+    if (amount > remainingBudget) {
+      toast({
+        title: "Budget Exceeded",
+        description: "Your team doesn't have enough budget for this bid.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newBid: Bid = {
+      id: `bid-${Date.now()}`,
+      auctionId: auction.id,
+      playerId: currentPlayer.id,
+      teamId: user.teamId,
+      amount,
+      timestamp: new Date(),
+      status: "active",
+    };
+    
+    setCurrentBidAmount(amount);
+    setCurrentBiddingTeam(user.teamId);
+    
+    setPlayerBids([newBid, ...playerBids]);
+    
+    setTimeLeft(30);
+    
+    toast({
+      title: "Bid Placed",
+      description: `You've placed a bid of ₹${amount.toLocaleString()} for ${currentPlayer.name}`,
     });
   };
 
@@ -277,6 +399,7 @@ const AuctionDetailPage = () => {
     });
     
     setCurrentPlayer(playerToRetry);
+    resetBiddingState(playerToRetry);
     
     toast({
       title: "Player Retry",
@@ -424,34 +547,38 @@ const AuctionDetailPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1">
-                  <PlayerCard player={currentPlayer} showActions={user?.role === "teamOwner"} />
+              <LiveBidding 
+                player={currentPlayer}
+                teams={teams}
+                currentBid={currentBidAmount}
+                timeLeft={timeLeft}
+                onPlaceBid={handlePlaceBid}
+                biddingHistory={playerBids}
+              />
+
+              {user?.role === "admin" && (
+                <div className="mt-4 flex gap-2">
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleNextPlayer}
+                  >
+                    Mark as Sold
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => {
+                      const updatedPlayers = players.map(p => 
+                        p.id === currentPlayer.id ? { ...p, status: "unsold" as const } : p
+                      );
+                      setPlayers(updatedPlayers);
+                      handleNextPlayer();
+                    }}
+                  >
+                    Mark as Unsold
+                  </Button>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold mb-2">Current Bids</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg min-h-[100px] flex items-center justify-center">
-                    <p className="text-muted-foreground">No bids yet for this player</p>
-                  </div>
-                  
-                  {user?.role === "admin" && (
-                    <div className="mt-4 flex gap-2">
-                      <Button className="flex-1" onClick={handleNextPlayer}>
-                        Mark as Sold
-                      </Button>
-                      <Button variant="outline" className="flex-1" onClick={() => {
-                        const updatedPlayers = players.map(p => 
-                          p.id === currentPlayer.id ? { ...p, status: "unsold" as const } : p
-                        );
-                        setPlayers(updatedPlayers);
-                        handleNextPlayer();
-                      }}>
-                        Mark as Unsold
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -684,10 +811,7 @@ const AuctionDetailPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* State to store registration requests */}
-                {/* This would typically be fetched from an API */}
                 {(() => {
-                  // Mock data for registration requests
                   const registrationRequests = [
                     {
                       id: "req1",
@@ -965,7 +1089,7 @@ const AuctionDetailPage = () => {
               </Card>
             )}
             
-            {user?.role === "teamOwner" && (
+            {user?.role === "team_owner" && (
               <Card>
                 <CardHeader>
                   <CardTitle>Your Registration Status</CardTitle>

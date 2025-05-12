@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { Input } from "@/components/ui/input";
 
 interface LiveBiddingProps {
   player: Player;
@@ -28,8 +30,16 @@ const LiveBidding = ({
   const [bidAmount, setBidAmount] = useState(currentBid + 100000); // Default increment
   const [timeRemaining, setTimeRemaining] = useState(timeLeft);
   const { toast } = useToast();
+  const { user } = useAuth(); // Get the current user
+  const isTeamOwner = user?.role === "team_owner";
 
   // Timer countdown effect
+  useEffect(() => {
+    console.log("User in LiveBidding:", user);
+    console.log("Teams:", teams);
+    console.log("isTeamOwner:", isTeamOwner);
+  }, [user, teams]);
+
   useEffect(() => {
     if (timeRemaining <= 0) return;
     
@@ -182,51 +192,57 @@ const LiveBidding = ({
             <Progress value={(timeRemaining / timeLeft) * 100} className="h-2" />
           </div>
           
-          <div className="flex gap-2 mb-6">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setBidAmount(currentBid + 100000)}
-            >
-              +1 Lakh
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setBidAmount(currentBid + 500000)}
-            >
-              +5 Lakhs
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setBidAmount(currentBid + 1000000)}
-            >
-              +10 Lakhs
-            </Button>
-          </div>
+          {/* Show bidding controls only to team owners */}
+          {isTeamOwner && (
+            <>
+              <div className="flex gap-2 mb-6">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setBidAmount(currentBid + 100000)}
+                >
+                  +1 Lakh
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setBidAmount(currentBid + 500000)}
+                >
+                  +5 Lakhs
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setBidAmount(currentBid + 1000000)}
+                >
+                  +10 Lakhs
+                </Button>
+              </div>
+              
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 relative">
+                  <Input
+                    type="number"
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(Number(e.target.value))}
+                    className="pl-8"
+                  />
+                  <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                </div>
+                <Button onClick={handleBid} className="bg-bidfy-blue hover:bg-blue-600">
+                  Place Bid
+                </Button>
+              </div>
+            </>
+          )}
           
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1 relative">
-              <input
-                type="number"
-                value={bidAmount}
-                onChange={(e) => setBidAmount(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg p-2 pl-8"
-              />
-              <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
-            </div>
-            <Button onClick={handleBid} className="bg-bidfy-blue hover:bg-blue-600">
-              Place Bid
-            </Button>
-          </div>
-          
+          {/* Bid history is shown to everyone */}
           <div className="mt-auto">
             <h4 className="font-semibold mb-2">Bid History</h4>
             <div className="max-h-48 overflow-auto">
               {biddingHistory.length > 0 ? (
                 <ul className="space-y-2">
-                  {biddingHistory.map((bid, index) => {
+                  {biddingHistory.map((bid) => {
                     const team = getTeamById(bid.teamId);
                     return (
                       <li key={bid.id} className="flex items-center gap-2 text-sm">

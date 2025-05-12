@@ -19,26 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X, Plus, Users, CalendarDays, Mail } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import RegisteredTeamsList from "@/components/auctions/RegisteredTeamsList";
-import PlayerRegistrationRequestsDialog from "@/components/admin/PlayerRegistrationRequestsDialog";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -91,55 +82,6 @@ const mockPlayers = [
   { id: "5", name: "KL Rahul", role: "Batsman", basePrice: 1600000, status: "available" },
 ];
 
-// Mock teams for team registration
-const mockTeams: Team[] = [
-  { 
-    id: "1", 
-    name: "Mumbai Indians", 
-    ownerName: "John Doe", 
-    ownerId: "u1", 
-    budget: 80000000, 
-    budgetSpent: 10000000, 
-    players: ["1", "3"] 
-  },
-  { 
-    id: "2", 
-    name: "Chennai Super Kings", 
-    ownerName: "Jane Smith", 
-    ownerId: "u2", 
-    budget: 80000000, 
-    budgetSpent: 15000000, 
-    players: ["2"] 
-  },
-  { 
-    id: "3", 
-    name: "Royal Challengers", 
-    ownerName: "Mike Johnson", 
-    ownerId: "u3", 
-    budget: 80000000, 
-    budgetSpent: 8000000, 
-    players: ["4", "5"] 
-  },
-  { 
-    id: "4", 
-    name: "Rajasthan Royals", 
-    ownerName: "Sarah Lee", 
-    ownerId: "u4", 
-    budget: 70000000, 
-    budgetSpent: 5000000, 
-    players: [] 
-  },
-  { 
-    id: "5", 
-    name: "Punjab Kings", 
-    ownerName: "David Wilson", 
-    ownerId: "u5", 
-    budget: 75000000, 
-    budgetSpent: 12000000, 
-    players: [] 
-  }
-];
-
 const AuctionsPage = () => {
   const { user } = useAuth();
   const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -149,9 +91,6 @@ const AuctionsPage = () => {
   const [isPlayerSelectionOpen, setIsPlayerSelectionOpen] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
-  const [registeredTeams, setRegisteredTeams] = useState<Team[]>(mockTeams);
-  const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
-  const [isRequestsDialogOpen, setIsRequestsDialogOpen] = useState(false);
   const [createdAuctionId, setCreatedAuctionId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -193,12 +132,6 @@ const AuctionsPage = () => {
     } else {
       setSelectedPlayers([...selectedPlayers, playerId]);
     }
-  };
-
-  // Open the PlayerRegistrationRequests dialog for a specific auction
-  const openRequestsDialog = (auction: Auction) => {
-    setSelectedAuction(auction);
-    setIsRequestsDialogOpen(true);
   };
 
   // Handle create auction
@@ -275,14 +208,6 @@ const AuctionsPage = () => {
       title: "Success",
       description: "Players added to auction pool",
     });
-  };
-
-  // Function to get teams for a specific auction
-  const getAuctionTeams = (auctionId: string) => {
-    const auction = auctions.find(a => a.id === auctionId);
-    if (!auction) return [];
-    
-    return registeredTeams.filter(team => auction.teams.includes(team.id));
   };
 
   return (
@@ -446,15 +371,6 @@ const AuctionsPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Player Registration Requests Dialog */}
-        {selectedAuction && (
-          <PlayerRegistrationRequestsDialog
-            open={isRequestsDialogOpen}
-            onOpenChange={setIsRequestsDialogOpen}
-            auctionId={selectedAuction.id}
-          />
-        )}
-
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">
@@ -479,95 +395,12 @@ const AuctionsPage = () => {
           </div>
         </div>
 
-        {/* Auctions grid - for all users */}
+        {/* Simplified Auctions grid */}
         <h2 className="text-xl font-semibold mb-4">All Auctions</h2>
         {filteredAuctions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAuctions.map((auction) => (
-              <Card key={auction.id} className="flex flex-col h-full">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>{auction.name}</CardTitle>
-                      <CardDescription>{auction.description || "No description available"}</CardDescription>
-                    </div>
-                    <Badge 
-                      variant={
-                        auction.status === "live" 
-                          ? "default" 
-                          : auction.status === "upcoming" 
-                            ? "outline" 
-                            : "secondary"
-                      }
-                    >
-                      {auction.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <AuctionCard auction={auction} />
-                </CardContent>
-                
-                {user?.role === "admin" && (
-                  <CardFooter className="flex-col gap-4 pt-0">
-                    <div className="flex justify-between w-full">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => {
-                          setCreatedAuctionId(auction.id);
-                          setIsPlayerSelectionOpen(true);
-                          // Initialize with already selected players
-                          setSelectedPlayers(auction.players || []);
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Manage Players
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          setSelectedAuction(auction);
-                          setIsRequestsDialogOpen(true);
-                        }}
-                      >
-                        <Mail className="h-4 w-4 mr-2" />
-                        Registration Requests
-                      </Button>
-                    </div>
-                    
-                    <Tabs defaultValue="teams" className="w-full">
-                      <TabsList className="grid grid-cols-2">
-                        <TabsTrigger value="teams">
-                          <Users className="h-4 w-4 mr-2" />
-                          Teams
-                        </TabsTrigger>
-                        <TabsTrigger value="details">
-                          <CalendarDays className="h-4 w-4 mr-2" />
-                          Details
-                        </TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="teams">
-                        <div className="max-h-60 overflow-y-auto">
-                          <RegisteredTeamsList teams={getAuctionTeams(auction.id)} />
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="details">
-                        <div className="space-y-2 text-sm">
-                          <p><strong>Start Time:</strong> {auction.startTime.toLocaleString()}</p>
-                          <p><strong>Base Price:</strong> ₹{auction.basePlayerPrice.toLocaleString()}</p>
-                          <p><strong>Budget/Team:</strong> ₹{auction.baseBudget.toLocaleString()}</p>
-                          <p><strong>Players:</strong> {auction.players?.length || 0}</p>
-                          <p><strong>Teams:</strong> {auction.teams.length}</p>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </CardFooter>
-                )}
-              </Card>
+              <AuctionCard auction={auction} />
             ))}
           </div>
         ) : (

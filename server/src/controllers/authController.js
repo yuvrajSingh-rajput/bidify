@@ -5,7 +5,9 @@ import { uploadMedia, deleteMediaFromCloudinary } from '../utils/cloudinary.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    console.log(req.body);
+    console.log(req.file);
+    const { name, email, password, role, teamName } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -16,7 +18,7 @@ export const register = async (req, res) => {
     await user.save();
 
     if (role === 'team_owner') {
-      const existingTeam = await Team.findOne({teamName: name});
+      const existingTeam = await Team.findOne({teamName: teamName}); 
       if(existingTeam){
         return res.staus(400).json({
           error: "team of this name already exists, login or enter a different team name.",
@@ -24,13 +26,13 @@ export const register = async (req, res) => {
       }
 
       const teamLogo = req.file;
-      const imageUrl = "https://t3.ftcdn.net/jpg/05/13/39/96/360_F_513399651_7X6aDPItRkVK4RtrysnGF8A88Gyfes3T.jpg"
+      let imageUrl = "https://t3.ftcdn.net/jpg/05/13/39/96/360_F_513399651_7X6aDPItRkVK4RtrysnGF8A88Gyfes3T.jpg"
       if(teamLogo){
-        const cloudResponse = await uploadMedia(profilePhoto.path);
+        const cloudResponse = await uploadMedia(teamLogo.path);
         imageUrl = cloudResponse.secure_url;
       }
       const updatedData = {
-        name: name,
+        teamName: teamName,
         teamLogo: imageUrl,
         owner: user._id,
       };
