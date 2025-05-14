@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Player, Team, Bid } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
+import { Pause } from "lucide-react";
 
 interface LiveBiddingProps {
   player: Player;
@@ -17,6 +17,7 @@ interface LiveBiddingProps {
   timeLeft: number;
   onPlaceBid: (amount: number) => void;
   biddingHistory: Bid[];
+  isPaused?: boolean;
 }
 
 const LiveBidding = ({
@@ -26,6 +27,7 @@ const LiveBidding = ({
   timeLeft,
   onPlaceBid,
   biddingHistory,
+  isPaused = false,
 }: LiveBiddingProps) => {
   const [bidAmount, setBidAmount] = useState(currentBid + 100000); // Default increment
   const [timeRemaining, setTimeRemaining] = useState(timeLeft);
@@ -35,13 +37,7 @@ const LiveBidding = ({
 
   // Timer countdown effect
   useEffect(() => {
-    console.log("User in LiveBidding:", user);
-    console.log("Teams:", teams);
-    console.log("isTeamOwner:", isTeamOwner);
-  }, [user, teams]);
-
-  useEffect(() => {
-    if (timeRemaining <= 0) return;
+    if (timeRemaining <= 0 || isPaused) return;
     
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -54,7 +50,7 @@ const LiveBidding = ({
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [timeRemaining]);
+  }, [timeRemaining, isPaused]);
 
   // Reset timer when a new bid comes in
   useEffect(() => {
@@ -62,6 +58,15 @@ const LiveBidding = ({
   }, [timeLeft, currentBid]);
 
   const handleBid = () => {
+    if (isPaused) {
+      toast({
+        title: "Auction Paused",
+        description: "Bidding is temporarily paused by the admin.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (bidAmount <= currentBid) {
       toast({
         title: "Invalid bid amount",
@@ -160,6 +165,13 @@ const LiveBidding = ({
       {/* Bidding Interface */}
       <Card className="p-6 md:col-span-2">
         <div className="flex flex-col h-full">
+          {isPaused && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-2">
+              <Pause className="h-5 w-5 text-amber-500" />
+              <span className="font-medium text-amber-700">Auction is currently paused. Bidding will resume shortly.</span>
+            </div>
+          )}
+          
           <div className="mb-6 text-center">
             <h3 className="text-xl font-semibold mb-2">Current Bid</h3>
             <div className="text-4xl font-bold text-bidfy-blue mb-3">
@@ -187,9 +199,9 @@ const LiveBidding = ({
           <div className="mb-6">
             <div className="flex justify-between text-sm mb-1">
               <span>Time Left</span>
-              <span>{timeRemaining}s</span>
+              <span>{isPaused ? "Paused" : `${timeRemaining}s`}</span>
             </div>
-            <Progress value={(timeRemaining / timeLeft) * 100} className="h-2" />
+            <Progress value={isPaused ? 100 : (timeRemaining / timeLeft) * 100} className={`h-2 ${isPaused ? "bg-amber-200" : ""}`} />
           </div>
           
           {/* Show bidding controls only to team owners */}
@@ -200,6 +212,7 @@ const LiveBidding = ({
                   variant="outline"
                   className="flex-1"
                   onClick={() => setBidAmount(currentBid + 100000)}
+                  disabled={isPaused}
                 >
                   +1 Lakh
                 </Button>
@@ -207,6 +220,7 @@ const LiveBidding = ({
                   variant="outline"
                   className="flex-1"
                   onClick={() => setBidAmount(currentBid + 500000)}
+                  disabled={isPaused}
                 >
                   +5 Lakhs
                 </Button>
@@ -214,6 +228,7 @@ const LiveBidding = ({
                   variant="outline"
                   className="flex-1"
                   onClick={() => setBidAmount(currentBid + 1000000)}
+                  disabled={isPaused}
                 >
                   +10 Lakhs
                 </Button>
@@ -226,10 +241,15 @@ const LiveBidding = ({
                     value={bidAmount}
                     onChange={(e) => setBidAmount(Number(e.target.value))}
                     className="pl-8"
+                    disabled={isPaused}
                   />
                   <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
                 </div>
-                <Button onClick={handleBid} className="bg-bidfy-blue hover:bg-blue-600">
+                <Button 
+                  onClick={handleBid} 
+                  className="bg-bidfy-blue hover:bg-blue-600"
+                  disabled={isPaused}
+                >
                   Place Bid
                 </Button>
               </div>
