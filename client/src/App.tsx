@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,7 +9,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import PlayerRegistrationPage from "./pages/PlayerRegistrationPage";
 import Dashboard from "./pages/Dashboard";
 import AuctionsPage from "./pages/AuctionsPage";
 import AuctionDetailPage from "./pages/AuctionDetailPage";
@@ -21,6 +19,9 @@ import MatchesPage from "./pages/MatchesPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
+import PlayerRegistrationPage from "./pages/PlayerRegistrationPage";
+import AuctionMatchesPage from "./pages/AuctionMatchesPage";
+import AuctionStatisticsPage from "./pages/AuctionStatisticsPage";
 
 const queryClient = new QueryClient();
 
@@ -39,13 +40,15 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/auctions" element={<AuctionsPage />} />
             <Route path="/auctions/:id" element={<AuctionDetailPage />} />
+            <Route path="/auctions/:id/matches" element={<AuctionMatchesPage />} />
+            <Route path="/auctions/:id/statistics" element={<AuctionStatisticsPage />} />
             <Route path="/players" element={<PlayersPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/my-team" element={<MyTeamPage />} />
             <Route path="/matches" element={<MatchesPage />} />
             <Route path="/statistics" element={<StatisticsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/profile" element={<SettingsPage />} /> {/* Added a profile route that redirects to SettingsPage */}
+            <Route path="/profile" element={<SettingsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

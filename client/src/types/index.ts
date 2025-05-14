@@ -1,9 +1,8 @@
-
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'teamOwner';
+  role: 'admin' | 'team_owner';
   teamId?: string;
   avatar?: string;
 }
@@ -40,18 +39,20 @@ export interface Team {
   players: string[]; // Array of player IDs
 }
 
+export type AuctionStatus = "upcoming" | "live" | "paused" | "completed";
+
 export interface Auction {
   id: string;
   name: string;
   description?: string;
   startTime: Date;
   endTime?: Date;
-  status: 'upcoming' | 'live' | 'completed';
+  status: AuctionStatus;
   basePlayerPrice: number;
   baseBudget: number;
-  currentPlayerId?: string;
   teams: string[]; // Array of team IDs
   players: string[]; // Array of player IDs
+  currentPlayerId?: string;
 }
 
 export interface Bid {

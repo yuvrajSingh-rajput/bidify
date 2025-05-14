@@ -5,13 +5,13 @@ import { Auction, Player, Team, Bid } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import MainLayout from "@/components/layouts/MainLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow, format } from "date-fns";
-import { Clock, Users, DollarSign, Trophy, Mail, X, Check, Eye } from "lucide-react";
+import { Clock, Users, DollarSign, Trophy, Mail, X, Check, Eye, Pause, ChevronRight } from "lucide-react";
 import PlayerCard from "@/components/players/PlayerCard";
 import ManageAuctionPlayersDialog from "@/components/admin/ManageAuctionPlayersDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -166,7 +166,6 @@ const AuctionDetailPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isManagePlayersOpen, setIsManagePlayersOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
-  
   const [currentBidAmount, setCurrentBidAmount] = useState<number>(0);
   const [currentBiddingTeam, setCurrentBiddingTeam] = useState<string | null>(null);
   const [playerBids, setPlayerBids] = useState<Bid[]>([]);
@@ -180,20 +179,20 @@ const AuctionDetailPage = () => {
         setPlayers(mockPlayers);
         setTeams(mockTeams);
         setBids(mockBids);
-        
+
         if (mockAuction.status === "live" && mockAuction.currentPlayerId) {
           const player = mockPlayers.find(p => p.id === mockAuction.currentPlayerId);
           if (player) {
             setCurrentPlayer(player);
             setCurrentBidAmount(player.basePrice);
-            
+
             const playerActiveBids = mockBids.filter(
               b => b.playerId === player.id && b.auctionId === mockAuction.id
             );
-            
+
             setPlayerBids(playerActiveBids);
             setTimeLeft(30);
-            
+
             if (playerActiveBids.length > 0) {
               const sortedBids = [...playerActiveBids].sort((a, b) => b.amount - a.amount);
               if (sortedBids[0]) {
@@ -217,7 +216,7 @@ const AuctionDetailPage = () => {
 
     fetchData();
   }, [id, toast]);
-  
+
   const resetBiddingState = (player: Player) => {
     setCurrentBidAmount(player.basePrice);
     setPlayerBids([]);
@@ -235,36 +234,52 @@ const AuctionDetailPage = () => {
 
   const handleStartAuction = () => {
     if (!auction) return;
-    
+
     const firstPlayer = players[0];
-    
+
     setAuction({
       ...auction,
       status: "live",
       currentPlayerId: firstPlayer.id,
     });
-    
+
     setCurrentPlayer(firstPlayer);
     resetBiddingState(firstPlayer);
-    
+
     toast({
       title: "Auction Started",
       description: "The auction is now live!",
     });
   };
 
+  const handlePauseAuction = () => {
+    if (!auction) return;
+
+    setAuction({
+      ...auction,
+      status: auction.status === "paused" ? "live" : "paused",
+    });
+
+    toast({
+      title: auction.status === "paused" ? "Auction Resumed" : "Auction Paused",
+      description: auction.status === "paused"
+        ? "The auction is now live again!"
+        : "The auction has been paused. No bids can be placed until resumed.",
+    });
+  };
+
   const handleEndAuction = () => {
     if (!auction) return;
-    
+
     setAuction({
       ...auction,
       status: "completed",
       endTime: new Date(),
       currentPlayerId: undefined,
     });
-    
+
     setCurrentPlayer(null);
-    
+
     toast({
       title: "Auction Ended",
       description: "The auction has been completed.",
@@ -273,18 +288,18 @@ const AuctionDetailPage = () => {
 
   const handleNextPlayer = () => {
     if (!auction || !currentPlayer) return;
-    
+
     if (currentBiddingTeam && playerBids.length > 0) {
       const teamId = currentBiddingTeam;
       const soldPrice = currentBidAmount;
-      
-      const updatedPlayers = players.map(p => 
-        p.id === currentPlayer.id ? 
-          { ...p, status: "sold" as const, teamId, soldPrice } : 
+
+      const updatedPlayers = players.map(p =>
+        p.id === currentPlayer.id ?
+          { ...p, status: "sold" as const, teamId, soldPrice } :
           p
       );
       setPlayers(updatedPlayers);
-      
+
       const winningBid: Bid = {
         id: `bid-${Date.now()}`,
         auctionId: auction.id,
@@ -294,14 +309,14 @@ const AuctionDetailPage = () => {
         timestamp: new Date(),
         status: "won",
       };
-      
+
       const updatedBids = playerBids.map(bid => ({
         ...bid,
         status: "outbid" as const
       }));
-      
+
       setBids([...bids, ...updatedBids, winningBid]);
-      
+
       const updatedTeams = teams.map(team => {
         if (team.id === teamId) {
           return {
@@ -314,32 +329,32 @@ const AuctionDetailPage = () => {
       });
       setTeams(updatedTeams);
     }
-    
+
     const currentIndex = players.findIndex(p => p.id === currentPlayer.id);
     if (currentIndex === -1 || currentIndex === players.length - 1) {
       handleEndAuction();
       return;
     }
-    
+
     const nextPlayer = players[currentIndex + 1];
-    
+
     setAuction({
       ...auction,
       currentPlayerId: nextPlayer.id,
     });
-    
+
     setCurrentPlayer(nextPlayer);
     resetBiddingState(nextPlayer);
-    
+
     toast({
       title: "Next Player",
       description: `Now bidding for ${nextPlayer.name}`,
     });
   };
-  
+
   const handlePlaceBid = (amount: number) => {
     if (!currentPlayer || !auction || !user?.teamId) return;
-    
+
     const team = teams.find(t => t.id === user.teamId);
     if (!team) {
       toast({
@@ -349,7 +364,7 @@ const AuctionDetailPage = () => {
       });
       return;
     }
-    
+
     const remainingBudget = team.budget - team.budgetSpent;
     if (amount > remainingBudget) {
       toast({
@@ -359,7 +374,7 @@ const AuctionDetailPage = () => {
       });
       return;
     }
-    
+
     const newBid: Bid = {
       id: `bid-${Date.now()}`,
       auctionId: auction.id,
@@ -369,14 +384,14 @@ const AuctionDetailPage = () => {
       timestamp: new Date(),
       status: "active",
     };
-    
+
     setCurrentBidAmount(amount);
     setCurrentBiddingTeam(user.teamId);
-    
+
     setPlayerBids([newBid, ...playerBids]);
-    
+
     setTimeLeft(30);
-    
+
     toast({
       title: "Bid Placed",
       description: `You've placed a bid of ₹${amount.toLocaleString()} for ${currentPlayer.name}`,
@@ -386,21 +401,21 @@ const AuctionDetailPage = () => {
   const handleRetryPlayer = (playerId: string) => {
     const playerToRetry = players.find(p => p.id === playerId);
     if (!playerToRetry || !auction) return;
-    
-    const updatedPlayers = players.map(p => 
+
+    const updatedPlayers = players.map(p =>
       p.id === playerId ? { ...p, status: "available" as const } : p
     );
-    
+
     setPlayers(updatedPlayers);
-    
+
     setAuction({
       ...auction,
       currentPlayerId: playerId,
     });
-    
+
     setCurrentPlayer(playerToRetry);
     resetBiddingState(playerToRetry);
-    
+
     toast({
       title: "Player Retry",
       description: `Retrying bidding for ${playerToRetry.name}`,
@@ -445,41 +460,53 @@ const AuctionDetailPage = () => {
             </div>
             <h1 className="text-3xl font-bold">{auction.name}</h1>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {user?.role === "admin" && auction.status === "upcoming" && (
               <Button onClick={handleStartAuction}>Start Auction</Button>
             )}
-            
-            {user?.role === "admin" && auction.status === "live" && (
+
+            {user?.role === "admin" && (auction.status === "live" || auction.status === "paused") && (
               <>
-                <Button onClick={handleNextPlayer}>Next Player</Button>
+                {auction.status === "live" && (
+                  <Button onClick={handleNextPlayer}>Next Player</Button>
+                )}
+                <Button onClick={handlePauseAuction} variant={auction.status === "paused" ? "outline" : "secondary"}>
+                  {auction.status === "paused" ? "Resume Auction" : (
+                    <>
+                      <Pause className="h-4 w-4 mr-1" />
+                      Pause Auction
+                    </>
+                  )}
+                </Button>
                 <Button variant="destructive" onClick={handleEndAuction}>End Auction</Button>
               </>
             )}
-            
+
             {user?.role === "admin" && (
               <Button variant="outline" onClick={() => setIsManagePlayersOpen(true)}>
                 Manage Players
               </Button>
             )}
-            
+
             <Button asChild variant="outline">
               <Link to="/auctions">Back to Auctions</Link>
             </Button>
           </div>
         </div>
-        
+
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className={`p-3 rounded-full ${
                   auction.status === "live" ? "bg-green-100" :
+                  auction.status === "paused" ? "bg-amber-100" :
                   auction.status === "upcoming" ? "bg-blue-100" : "bg-gray-100"
                 }`}>
                   <Clock className={`h-6 w-6 ${
                     auction.status === "live" ? "text-green-600" :
+                    auction.status === "paused" ? "text-amber-600" :
                     auction.status === "upcoming" ? "text-blue-600" : "text-gray-600"
                   }`} />
                 </div>
@@ -488,9 +515,11 @@ const AuctionDetailPage = () => {
                   <div className="flex items-center gap-2">
                     <Badge className={`${
                       auction.status === "live" ? "bg-green-500" :
+                      auction.status === "paused" ? "bg-amber-500" :
                       auction.status === "upcoming" ? "bg-blue-500" : "bg-gray-500"
                     }`}>
                       {auction.status === "live" ? "Live Now" :
+                       auction.status === "paused" ? "Paused" :
                        auction.status === "upcoming" ? "Upcoming" : "Completed"}
                     </Badge>
                     {auction.status === "upcoming" && (
@@ -501,7 +530,7 @@ const AuctionDetailPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-full bg-purple-100">
                   <Users className="h-6 w-6 text-purple-600" />
@@ -511,7 +540,7 @@ const AuctionDetailPage = () => {
                   <p className="font-medium">{teams.length} Participating</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-full bg-amber-100">
                   <DollarSign className="h-6 w-6 text-amber-600" />
@@ -521,7 +550,7 @@ const AuctionDetailPage = () => {
                   <p className="font-medium">₹{auction.basePlayerPrice.toLocaleString()}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-full bg-green-100">
                   <Trophy className="h-6 w-6 text-green-600" />
@@ -534,41 +563,45 @@ const AuctionDetailPage = () => {
             </div>
           </CardContent>
         </Card>
-        
-        {auction.status === "live" && currentPlayer && (
-          <Card className="mb-6 border-2 border-green-500">
+
+        {(auction.status === "live" || auction.status === "paused") && currentPlayer && (
+          <Card className={`mb-6 border-2 ${auction.status === "paused" ? "border-amber-500" : "border-green-500"}`}>
             <CardHeader className="pb-2">
               <CardTitle className="flex justify-between items-center">
                 <span>Current Player</span>
-                <Badge className="bg-green-500">Bidding Now</Badge>
+                <Badge className={auction.status === "paused" ? "bg-amber-500" : "bg-green-500"}>
+                  {auction.status === "paused" ? "Bidding Paused" : "Bidding Now"}
+                </Badge>
               </CardTitle>
               <CardDescription>
                 Bidding started at {format(new Date(), "h:mm a")}
+                {auction.status === "paused" && " (Currently Paused)"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <LiveBidding 
+              <LiveBidding
                 player={currentPlayer}
                 teams={teams}
                 currentBid={currentBidAmount}
                 timeLeft={timeLeft}
                 onPlaceBid={handlePlaceBid}
                 biddingHistory={playerBids}
+                isPaused={auction.status === "paused"}
               />
 
-              {user?.role === "admin" && (
+              {user?.role === "admin" && auction.status === "live" && (
                 <div className="mt-4 flex gap-2">
-                  <Button 
-                    className="flex-1" 
+                  <Button
+                    className="flex-1"
                     onClick={handleNextPlayer}
                   >
                     Mark as Sold
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex-1" 
+                  <Button
+                    variant="outline"
+                    className="flex-1"
                     onClick={() => {
-                      const updatedPlayers = players.map(p => 
+                      const updatedPlayers = players.map(p =>
                         p.id === currentPlayer.id ? { ...p, status: "unsold" as const } : p
                       );
                       setPlayers(updatedPlayers);
@@ -582,7 +615,7 @@ const AuctionDetailPage = () => {
             </CardContent>
           </Card>
         )}
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 md:grid-cols-5 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -591,7 +624,7 @@ const AuctionDetailPage = () => {
             <TabsTrigger value="history">Bid History</TabsTrigger>
             <TabsTrigger value="registration-request">Registration Request</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="overview" className="space-y-6">
             <Card>
               <CardHeader>
@@ -606,29 +639,29 @@ const AuctionDetailPage = () => {
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Start Time</h3>
                     <p>{format(auction.startTime, "PPP 'at' h:mm a")}</p>
                   </div>
-                  
+
                   {auction.endTime && (
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-1">End Time</h3>
                       <p>{format(auction.endTime, "PPP 'at' h:mm a")}</p>
                     </div>
                   )}
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Base Player Price</h3>
                     <p>₹{auction.basePlayerPrice.toLocaleString()}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Team Budget</h3>
                     <p>₹{auction.baseBudget.toLocaleString()}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Players</h3>
                     <p>{players.length}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Participating Teams</h3>
                     <p>{teams.length}</p>
@@ -636,7 +669,7 @@ const AuctionDetailPage = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -662,7 +695,7 @@ const AuctionDetailPage = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Participating Teams</CardTitle>
@@ -690,7 +723,7 @@ const AuctionDetailPage = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="players">
             <Card>
               <CardHeader>
@@ -708,7 +741,7 @@ const AuctionDetailPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="teams">
             <Card>
               <CardHeader>
@@ -751,7 +784,7 @@ const AuctionDetailPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="history">
             <Card>
               <CardHeader>
@@ -776,7 +809,7 @@ const AuctionDetailPage = () => {
                       {bids.map((bid) => {
                         const player = players.find(p => p.id === bid.playerId);
                         const team = teams.find(t => t.id === bid.teamId);
-                        
+
                         return (
                           <TableRow key={bid.id}>
                             <TableCell>{player?.name || "Unknown Player"}</TableCell>
@@ -854,7 +887,7 @@ const AuctionDetailPage = () => {
                       message: "Hoping for a chance to showcase my skills in the tournament.",
                     },
                   ];
-                  
+
                   if (registrationRequests.length === 0) {
                     return (
                       <div className="text-center py-8">
@@ -890,10 +923,10 @@ const AuctionDetailPage = () => {
                             <TableCell>{request.phone}</TableCell>
                             <TableCell>{formatDistanceToNow(request.date, { addSuffix: true })}</TableCell>
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant={
-                                  request.status === "approved" ? "default" : 
-                                  request.status === "rejected" ? "destructive" : 
+                                  request.status === "approved" ? "default" :
+                                  request.status === "rejected" ? "destructive" :
                                   "outline"
                                 }
                               >
@@ -921,23 +954,23 @@ const AuctionDetailPage = () => {
                                           <h4 className="font-semibold">{request.name}</h4>
                                           <p className="text-sm text-muted-foreground">Email: {request.email}</p>
                                         </div>
-                                        <Badge 
+                                        <Badge
                                           className="ml-auto"
                                           variant={
-                                            request.status === "approved" ? "default" : 
-                                            request.status === "rejected" ? "destructive" : 
+                                            request.status === "approved" ? "default" :
+                                            request.status === "rejected" ? "destructive" :
                                             "outline"
                                           }
                                         >
                                           {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                         </Badge>
                                       </div>
-                                      
+
                                       <div className="pt-2 border-t">
                                         <h4 className="text-sm font-medium mb-1">Request Message:</h4>
                                         <p className="text-sm">{request.message}</p>
                                       </div>
-                                      
+
                                       <div className="pt-2 border-t">
                                         <h4 className="text-sm font-medium mb-1">Request Date:</h4>
                                         <p className="text-sm">{format(request.date, "PPP 'at' h:mm a")}</p>
@@ -946,8 +979,8 @@ const AuctionDetailPage = () => {
                                     <DialogFooter>
                                       {request.status === "pending" && (
                                         <>
-                                          <Button 
-                                            variant="outline" 
+                                          <Button
+                                            variant="outline"
                                             onClick={() => {
                                               toast({
                                                 title: "Request Rejected",
@@ -975,11 +1008,11 @@ const AuctionDetailPage = () => {
                                     </DialogFooter>
                                   </DialogContent>
                                 </Dialog>
-                                
+
                                 {request.status === "pending" && (
                                   <>
-                                    <Button 
-                                      variant="ghost" 
+                                    <Button
+                                      variant="ghost"
                                       size="icon"
                                       onClick={() => {
                                         toast({
@@ -990,8 +1023,8 @@ const AuctionDetailPage = () => {
                                     >
                                       <Check className="h-4 w-4 text-green-600" />
                                     </Button>
-                                    <Button 
-                                      variant="ghost" 
+                                    <Button
+                                      variant="ghost"
                                       size="icon"
                                       onClick={() => {
                                         toast({
@@ -1014,7 +1047,7 @@ const AuctionDetailPage = () => {
                 })()}
               </CardContent>
             </Card>
-  
+
             {user?.role === "admin" && (
               <Card>
                 <CardHeader>
@@ -1042,7 +1075,7 @@ const AuctionDetailPage = () => {
                       Send Invitation
                     </Button>
                   </div>
-                  
+
                   <div className="mt-6">
                     <div className="text-sm font-medium mb-2">Recently Invited Teams</div>
                     <Table>
@@ -1088,7 +1121,7 @@ const AuctionDetailPage = () => {
                 </CardContent>
               </Card>
             )}
-            
+
             {user?.role === "team_owner" && (
               <Card>
                 <CardHeader>
@@ -1105,8 +1138,8 @@ const AuctionDetailPage = () => {
             )}
           </TabsContent>
         </Tabs>
-        
-        {user?.role === "admin" && auction.status === "live" && (
+
+        {user?.role === "admin" && (auction.status === "live" || auction.status === "paused") && (
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Unsold Players</CardTitle>
@@ -1127,7 +1160,7 @@ const AuctionDetailPage = () => {
                         </CardHeader>
                         <CardContent className="pb-2">
                           <p className="text-sm mb-2">Base Price: ₹{player.basePrice.toLocaleString()}</p>
-                          <Button 
+                          <Button
                             onClick={() => handleRetryPlayer(player.id)}
                             className="w-full"
                           >
@@ -1145,12 +1178,25 @@ const AuctionDetailPage = () => {
             </CardContent>
           </Card>
         )}
-        
+
+        {auction.status === "completed" && (
+          <div className="mt-8 flex justify-center">
+            <Link to={`/auctions/${id}/matches`}>
+              <Button size="lg" className="gap-2">
+                <Eye className="h-5 w-5" />
+                View Matches & Statistics
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {isManagePlayersOpen && (
           <ManageAuctionPlayersDialog
             open={isManagePlayersOpen}
             onClose={() => setIsManagePlayersOpen(false)}
             auctionId={id || ""}
+            players={players}
             onPlayersUpdate={handlePlayersUpdate}
           />
         )}
