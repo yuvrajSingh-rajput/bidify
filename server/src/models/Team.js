@@ -21,12 +21,6 @@ const teamSchema = new mongoose.Schema({
     type: Number,
     default: 150000000 
   },
-
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
   
   players: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -50,6 +50,7 @@ const playerSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  
   basePrice: {
     type: Number,
     required: true
