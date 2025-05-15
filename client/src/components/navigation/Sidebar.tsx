@@ -22,8 +22,8 @@ const Sidebar = () => {
     { name: "Auctions", href: "/auctions", icon: Gavel },
     { name: "Players", href: "/players", icon: Users },
     { name: "Teams", href: "/teams", icon: Trophy },
-    { name: "Matches", href: "/matches", icon: Calendar },
-    { name: "Statistics", href: "/statistics", icon: BarChart },
+    // { name: "Matches", href: "/matches", icon: Calendar },
+    // { name: "Statistics", href: "/statistics", icon: BarChart },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
@@ -31,8 +31,8 @@ const Sidebar = () => {
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Auctions", href: "/auctions", icon: Gavel },
     { name: "My Team", href: "/my-team", icon: Trophy },
-    { name: "Matches", href: "/matches", icon: Calendar },
-    { name: "Players", href: "/players", icon: Users },
+    // { name: "Matches", href: "/matches", icon: Calendar },
+    // { name: "Players", href: "/players", icon: Users },
     { name: "Profile", href: "/profile", icon: UserIcon },
   ];
 

@@ -41,12 +41,12 @@ const App = () => (
             <Route path="/auctions" element={<AuctionsPage />} />
             <Route path="/auctions/:id" element={<AuctionDetailPage />} />
             <Route path="/auctions/:id/matches" element={<AuctionMatchesPage />} />
-            <Route path="/auctions/:id/statistics" element={<AuctionStatisticsPage />} />
+            <Route path="/auctions/:id/statistics" element={<StatisticsPage />} />
             <Route path="/players" element={<PlayersPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/my-team" element={<MyTeamPage />} />
-            <Route path="/matches" element={<MatchesPage />} />
-            <Route path="/statistics" element={<StatisticsPage />} />
+            {/* <Route path="/matches" element={<MatchesPage />} />
+            <Route path="/statistics" element={<StatisticsPage />} /> */}
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/profile" element={<SettingsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
