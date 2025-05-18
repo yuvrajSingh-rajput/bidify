@@ -76,6 +76,17 @@ const playerSchema = new mongoose.Schema({
     strikeRate: { type: Number, default: 0 },
     economy: { type: Number, default: 0 }
   },
+
+  status: {
+    type: String,
+    enum: ["verified", "pending"],
+    default: "pending",
+  },
+
+  certificates: [{
+    type: String,
+  }],
+
   contractEndDate: {
     type: Date,
   },

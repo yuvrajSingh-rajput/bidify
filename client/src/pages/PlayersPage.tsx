@@ -227,9 +227,6 @@ const PlayersPage = () => {
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-xl">{player.name}</CardTitle>
-                        <Badge variant={player.inAuctionPool ? "default" : "outline"}>
-                          {player.inAuctionPool ? "In Auction Pool" : "Not in Pool"}
-                        </Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -257,26 +254,6 @@ const PlayersPage = () => {
                         <Button variant="outline" size="sm" onClick={() => openPlayerDetails(player)}>
                           View Details
                         </Button>
-                        
-                        {user?.role === "admin" && (
-                          player.inAuctionPool ? (
-                            <Button 
-                              variant="destructive" 
-                              size="sm"
-                              onClick={() => handleRemoveFromAuction(player)}
-                            >
-                              Remove from Auction
-                            </Button>
-                          ) : (
-                            <Button 
-                              variant="default" 
-                              size="sm"
-                              onClick={() => openAddToAuction(player)}
-                            >
-                              Add to Auction
-                            </Button>
-                          )
-                        )}
                       </div>
                     </CardContent>
                   </Card>
