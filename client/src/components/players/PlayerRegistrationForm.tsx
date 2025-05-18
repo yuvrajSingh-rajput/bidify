@@ -26,8 +26,8 @@ const PlayerRegistrationForm = () => {
   const [basePrice, setBasePrice] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [certificate, setCertificate] = useState<File | null>(null);
-  const [certificatePreview, setCertificatePreview] = useState<string | null>(null);
+  const [certificates, setCertificates] = useState<File[]>([]);
+  const [certificatePreviews, setCertificatePreviews] = useState<string[]>([]);
   
   // Cricket stats
   const [matches, setMatches] = useState("");
@@ -55,25 +55,32 @@ const PlayerRegistrationForm = () => {
     }
   };
 
-  const handleCertificateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setCertificate(file);
+  const handleCertificatesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const fileArray = Array.from(e.target.files);
+      setCertificates(prev => [...prev, ...fileArray]);
       
-      // Create a preview URL if it's an image type
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target?.result) {
-            setCertificatePreview(event.target.result as string);
-          }
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // For non-image files, just show the filename
-        setCertificatePreview(null);
-      }
+      // Create preview URLs for new files
+      fileArray.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (event.target?.result) {
+              setCertificatePreviews(prev => [...prev, event.target!.result as string]);
+            }
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // For non-image files, we won't create a preview
+          setCertificatePreviews(prev => [...prev, '']);
+        }
+      });
     }
+  };
+
+  const removeCertificate = (index: number) => {
+    setCertificates(prev => prev.filter((_, i) => i !== index));
+    setCertificatePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,8 +136,8 @@ const PlayerRegistrationForm = () => {
       setBasePrice("");
       setProfilePhoto(null);
       setPhotoPreview(null);
-      setCertificate(null);
-      setCertificatePreview(null);
+      setCertificates([]);
+      setCertificatePreviews([]);
       setTermsAccepted(false);
       
     } catch (error) {
@@ -337,43 +344,63 @@ const PlayerRegistrationForm = () => {
           </div>
         </div>
         
-        {/* Certificate Upload Field */}
+        {/* Multiple Certificates Upload Field */}
         <div className="col-span-1 md:col-span-2 space-y-2">
-          <Label htmlFor="certificate">Certificate (Optional)</Label>
-          <div className="flex items-center space-x-4">
-            <div className="h-20 w-20 border-2 border-gray-200 rounded flex items-center justify-center bg-gray-50">
-              {certificatePreview ? (
-                <img src={certificatePreview} alt="Certificate preview" className="h-full w-full object-cover" />
-              ) : (
-                <Award className="h-12 w-12 text-gray-400" />
-              )}
-            </div>
-            <div className="flex-1">
+          <Label htmlFor="certificates">Certificates (Optional)</Label>
+          <div className="space-y-4">
+            {certificates.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {certificates.map((cert, index) => (
+                  <div key={index} className="relative border border-gray-200 rounded-md p-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-14 w-14 bg-gray-50 rounded flex items-center justify-center">
+                        {certificatePreviews[index] && cert.type.startsWith('image/') ? (
+                          <img src={certificatePreviews[index]} alt={`Certificate ${index + 1}`} className="h-full w-full object-cover rounded" />
+                        ) : (
+                          <Award className="h-8 w-8 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{cert.name}</p>
+                        <p className="text-xs text-gray-500">{(cert.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        onClick={() => removeCertificate(index)}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex items-center justify-center">
               <Input
-                id="certificate"
+                id="certificates"
                 type="file"
-                onChange={handleCertificateChange}
+                onChange={handleCertificatesChange}
                 accept=".pdf,.jpg,.jpeg,.png"
                 className="hidden"
+                multiple
               />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => document.getElementById('certificate')?.click()}
-                className="w-full md:w-auto"
+                onClick={() => document.getElementById('certificates')?.click()}
+                className="w-full sm:w-auto"
               >
                 <FileText className="mr-2 h-4 w-4" />
-                {certificate ? 'Change Certificate' : 'Upload Certificate'}
+                Upload Certificates
               </Button>
-              {certificate && (
-                <p className="text-sm text-gray-500 mt-1">
-                  {certificate.name} ({(certificate.size / 1024).toFixed(1)} KB)
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                Upload your cricket certification or achievement documents (PDF, JPG, PNG)
-              </p>
             </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Upload your cricket certification or achievement documents (PDF, JPG, PNG)
+            </p>
           </div>
         </div>
       </div>

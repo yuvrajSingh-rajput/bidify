@@ -2,9 +2,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'team_owner';
+  role: 'admin' | 'team_owner' | 'player';
   teamId?: string;
   avatar?: string;
+  playerId?: string; // Reference to player data if user is a player
 }
 
 export interface Player {
@@ -26,6 +27,7 @@ export interface Player {
   teamId?: string;
   soldPrice?: number;
   status: 'available' | 'sold' | 'unsold';
+  userId?: string; // Reference to user account if player has an account
 }
 
 export interface Team {
@@ -93,4 +95,26 @@ export interface PlayerRegistrationRequest {
   message?: string;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
+  // New fields for enhanced player details
+  age?: string;
+  role?: string;
+  battingStyle?: string;
+  bowlingStyle?: string;
+  experience?: string;
+  basePrice?: string;
+  profilePhoto?: string;
+  certificates?: Array<{
+    name: string;
+    type: string;
+    size: number;
+  }>;
+  stats?: {
+    matches: number;
+    runs?: number;
+    wickets?: number;
+    average?: number;
+    strikeRate?: number;
+    economy?: number;
+  };
+  bio?: string;
 }
