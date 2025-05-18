@@ -8,9 +8,9 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
 import teamRoutes from './routes/teams.js';
 import playerRoutes from './routes/players.js';
-import auctionRoutes from './routes/auctions.js';
+// import auctionRoutes from './routes/auctions.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { setupSocketHandlers } from './utils/socket.js';
+// import { setupSocketHandlers } from './utils/socket.js';
 
 dotenv.config();
 
@@ -51,10 +51,10 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/players', playerRoutes);
-app.use('/api/auctions', auctionRoutes);
+// app.use('/api/auctions', auctionRoutes);
 
 // Socket.io setup
-setupSocketHandlers(io);
+// setupSocketHandlers(io);
 
 // Error handling middleware
 app.use(errorHandler);

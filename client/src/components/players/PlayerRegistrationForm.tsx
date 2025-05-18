@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Player } from "@/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Upload, Image } from "lucide-react";
+import { Upload, Image, FileText, Award } from "lucide-react";
 
 const PlayerRegistrationForm = () => {
   const [name, setName] = useState("");
@@ -27,6 +26,8 @@ const PlayerRegistrationForm = () => {
   const [basePrice, setBasePrice] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [certificate, setCertificate] = useState<File | null>(null);
+  const [certificatePreview, setCertificatePreview] = useState<string | null>(null);
   
   // Cricket stats
   const [matches, setMatches] = useState("");
@@ -51,6 +52,27 @@ const PlayerRegistrationForm = () => {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCertificateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCertificate(file);
+      
+      // Create a preview URL if it's an image type
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setCertificatePreview(event.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // For non-image files, just show the filename
+        setCertificatePreview(null);
+      }
     }
   };
 
@@ -107,6 +129,8 @@ const PlayerRegistrationForm = () => {
       setBasePrice("");
       setProfilePhoto(null);
       setPhotoPreview(null);
+      setCertificate(null);
+      setCertificatePreview(null);
       setTermsAccepted(false);
       
     } catch (error) {
@@ -309,6 +333,46 @@ const PlayerRegistrationForm = () => {
                   {profilePhoto.name} ({(profilePhoto.size / 1024).toFixed(1)} KB)
                 </p>
               )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Certificate Upload Field */}
+        <div className="col-span-1 md:col-span-2 space-y-2">
+          <Label htmlFor="certificate">Certificate (Optional)</Label>
+          <div className="flex items-center space-x-4">
+            <div className="h-20 w-20 border-2 border-gray-200 rounded flex items-center justify-center bg-gray-50">
+              {certificatePreview ? (
+                <img src={certificatePreview} alt="Certificate preview" className="h-full w-full object-cover" />
+              ) : (
+                <Award className="h-12 w-12 text-gray-400" />
+              )}
+            </div>
+            <div className="flex-1">
+              <Input
+                id="certificate"
+                type="file"
+                onChange={handleCertificateChange}
+                accept=".pdf,.jpg,.jpeg,.png"
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('certificate')?.click()}
+                className="w-full md:w-auto"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {certificate ? 'Change Certificate' : 'Upload Certificate'}
+              </Button>
+              {certificate && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {certificate.name} ({(certificate.size / 1024).toFixed(1)} KB)
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Upload your cricket certification or achievement documents (PDF, JPG, PNG)
+              </p>
             </div>
           </div>
         </div>
