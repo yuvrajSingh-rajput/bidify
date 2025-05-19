@@ -148,5 +148,3 @@ cricket-auction-system/
 ## License
 
 This project is licensed under the MIT License.
-# bidify
-# bidify
