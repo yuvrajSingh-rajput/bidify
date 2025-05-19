@@ -1,16 +1,21 @@
 import express from 'express';
 import { 
-    createPlayer, 
     getAllPlayers, 
     getPlayer, 
     updatePlayer, 
-    deletePlayer 
+    deletePlayer, 
+    createPlayerRequest
 } from '../controllers/playerController.js';
 import { auth, adminOnly } from '../middleware/auth.js';
+import upload from '../utils/multer.js';
 
 const router = express.Router();
 
-router.post('/', auth, adminOnly, createPlayer);
+// router.post('/', auth, adminOnly, createPlayer);
+router.post('/registration-request', auth, adminOnly, upload.fields([
+    {name: "profilePhoto", maxCount: 1},
+    {name: "certificates", maxCount: 10},
+]) , createPlayerRequest);
 router.get('/', auth, getAllPlayers);
 router.get('/:id', auth, getPlayer);
 router.patch('/:id', auth, adminOnly, updatePlayer);

@@ -1,4 +1,5 @@
 import Player from '../models/Player.js';
+import fs from "fs";
 import { deleteMediaFromCloudinary, uploadMedia } from '../utils/cloudinary.js';
 
 const defaultProfilePhoto = "https://media.istockphoto.com/id/1961226379/vector/cricket-player-playing-short-concept.jpg?s=612x612&w=0&k=20&c=CSiQd4qzLY-MB5o_anUOnwjIqxm7pP8aus-Lx74AQus=";
@@ -30,11 +31,23 @@ export const createPlayerRequest = async (req, res) => {
       return res.status(400).json({ error: "Player with same email or phone already exists" });
     }
 
+    const files = req.files;
+
     let profilePhoto = defaultProfilePhoto;
-    const profileImage = req.file;
-    if (profileImage) {
-      const cloudResponse = await uploadMedia(profileImage.path);
+    if (files.profilePhoto && files.profilePhoto.length > 0) {
+      const photo = files.profilePhoto[0];
+      const cloudResponse = await uploadMedia(photo.path);
+      fs.unlinkSync(photo.path); // Clean up local file
       profilePhoto = cloudResponse.secure_url;
+    }
+    
+    let certificates = [];
+    if (files.certificates && files.certificates.length > 0) {
+      for (const cert of files.certificates) {
+        const cloudResponse = await uploadMedia(cert.path);
+        fs.unlinkSync(cert.path);
+        certificates.push(cloudResponse.secure_url);
+      }
     }
 
     const newPlayer = new Player({
@@ -51,6 +64,7 @@ export const createPlayerRequest = async (req, res) => {
       stats: { matches, runs, wickets, average, strikeRate, economy },
       description: bio,
       profilePhoto,
+      certificates,
       status: 'pending'
     });
 
@@ -83,142 +97,30 @@ export const getAllPendingPlayerRegistrationRequests = async (_, res) => {
 
 export const reviewPendingPlayerRegistrationRequests = async (req, res) => {
   try {
-    const {
-      playerName,
-      email,
-      phone,
-      age,
-      playerRole,
-      battingStyle,
-      bowlingStyle,
-      playingExperience,
-      country,
-      basePrice,
-      matches,
-      runs,
-      wickets,
-      average,
-      status,
-      strikeRate,
-      economy,
-      bio
-    } = req.body;
+    const {playerId, status} = req.body;
+    const player = await Player.findById(playerId);
 
-    const existingPlayer = await Player.findOne({ email, phone });
-    if (existingPlayer) {
-      return res.status(400).json({ error: "Player already exists" });
+    if (!player) {
+      return res.status(404).json({ error: "Player not found" });
+    }    
+
+    if(status === "accepted"){
+      player.status = "verified";
+      await player.save();
+      return res.status(200).json({
+        message: "player reviewed and added successfully",
+        player,
+      });
+    }else{
+      await player.remove();
+      return res.status(200).json({
+        message: "player deleted successfully",
+      })
     }
-
-    let profilePhoto = defaultProfilePhoto;
-    const profileImage = req.file;
-    if (profileImage) {
-      const cloudResponse = await uploadMedia(profileImage.path);
-      profilePhoto = cloudResponse.secure_url;
-    }
-
-    const playerData = {
-      playerName,
-      email,
-      phone,
-      age,
-      playerRole,
-      battingStyle,
-      bowlingStyle,
-      playingExperience,
-      country,
-      basePrice,
-      stats: {
-        matches,
-        runs,
-        wickets,
-        average,
-        strikeRate,
-        economy
-      },
-      description: bio,
-      profilePhoto,
-      status: status === "accepted" ? "verified" : "pending"
-    };
-
-    const player = new Player(playerData);
-    await player.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Player reviewed and added successfully.",
-      player
-    });
 
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-export const createPlayer = async (req, res) => {
-  try {
-    const {
-      playerName, 
-      email,
-      phone,
-      age, 
-      playerRole,
-      battingStyle, 
-      bowlingStyle,
-      playingExperience,
-      country,
-      basePrice,
-      matches,
-      runs,
-      wickets,
-      average,
-      strikeRate,
-      economy,
-      bio
-    } = req.body;
-
-    const existingPlayer = await Player.findOne({playerName, email, phone});
-    if(existingPlayer){
-      return res.status(400).json({ error: "player already exists" });
-    }
-    const profileImage = req.file;
-    const profilePhoto = defaultProfilePhoto;
-    if(profileImage){
-      const cloudResponse = await uploadMedia(profileImage.path);
-      profilePhoto = cloudResponse.secure_url;
-    }
-    const playerData = {
-      playerName: playerName, 
-      email: email,
-      phone: phone,
-      age: age, 
-      playerRole: playerRole,
-      battingStyle: battingStyle, 
-      bowlingStyle: bowlingStyle,
-      playingExperience: playingExperience,
-      country: country,
-      basePrice: basePrice,
-      stats: {
-        matches: matches,
-        runs: runs, 
-        wickets: wickets,
-        average: average,
-        strikeRate: strikeRate,
-        economy: economy,
-      },
-      description: bio,
-      profilePhoto: profilePhoto,
-    }
-    const player = new Player(playerData);
-    await player.save();
-    return res.status(201).json({
-      success: true, 
-      message: "player added successfully!",
-      player  
-    });    
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "internal server error" });
   }
 };
 
@@ -244,7 +146,7 @@ export const getPlayer = async (req, res) => {
     return res.status(200).json(player);
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ error: error.message });
+    return res.status(500).json({ error: "internal server error" });
   }
 };
 
@@ -301,10 +203,6 @@ export const deletePlayer = async (req, res) => {
     const player = await Player.findById(req.params.id);
     if (!player) {
       return res.status(404).json({ error: 'Player not found' });
-    }
-
-    if (player.available) {
-      return res.status(400).json({ error: 'Cannot delete available (unsold) player' });
     }
     
     await player.remove();

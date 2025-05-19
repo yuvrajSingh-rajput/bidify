@@ -144,11 +144,6 @@ const PlayersPage = () => {
     });
   };
 
-  const openAddToAuction = (player) => {
-    setSelectedPlayerForAuction(player);
-    setIsAddToAuctionOpen(true);
-  };
-
   const handleAddToAuction = (auctionId) => {
     // In a real app, you would make an API call here
     toast({
@@ -159,14 +154,6 @@ const PlayersPage = () => {
     setSelectedPlayerForAuction(null);
   };
 
-  const handleRemoveFromAuction = (player) => {
-    // In a real app, you would make an API call here
-    toast({
-      title: "Success",
-      description: `Removed ${player.name} from auction pool`,
-    });
-  };
-
   return (
     <MainLayout>
       <div className="container mx-auto py-6">
@@ -174,11 +161,11 @@ const PlayersPage = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-3xl font-bold">Players</h1>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              {user?.role === "admin" && (
+              {/* {user?.role === "admin" && (
                 <Button onClick={() => setIsAddPlayerOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" /> Add Player
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
 

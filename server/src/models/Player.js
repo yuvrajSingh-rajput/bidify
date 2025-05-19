@@ -55,18 +55,6 @@ const playerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-
-  playingHistory: [{
-    teamName: {
-      type: String,
-    },
-    year: {
-      type: Date,
-    },
-    purchasePrice: {
-      type: Number
-    }
-  }],
   
   stats: {
     matches: { type: Number, default: 0 },
@@ -87,38 +75,34 @@ const playerSchema = new mongoose.Schema({
     type: String,
   }],
 
-  contractEndDate: {
-    type: Date,
-  },
-  available: {
-    type: Boolean,
-    default: true,
-  },
   description: {
     type: String,
   },
-  currentAuctionId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Auction',
-  }
+
+  playingHistory: [{
+    auctionName: {
+      type: String,
+    },
+    teamId: {
+      type: String,
+    },
+    year: {
+      type: Date,
+    },
+    purchasedPrice: {
+      type: String,
+    },
+    playingStatus: {
+      type: String,
+      enum: ["active", "finished"],
+      default: "active",
+    }
+  }],
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 const Player = mongoose.model('Player', playerSchema);
-
-const updatePlayerAvailability = async () => {
-  try {
-      const now = new Date();
-      const result = await Player.updateMany(
-          { contractEndDate: { $lte: now }, available: false },
-          { $set: { available: true } }
-      );
-      console.log(`Updated ${result.modifiedCount} players to available.`);
-  } catch (error) {
-      console.error('Error updating player availability:', error);
-  }
-};
 
 const incrementPlayerAge = async () => {
   try {
@@ -128,12 +112,6 @@ const incrementPlayerAge = async () => {
     console.error('Error incrementing player age:', error);
   }
 };
-
-// Schedule the job to run every midnight
-cron.schedule('0 0 * * *', () => {
-  console.log('Running scheduled job to update player availability...');
-  updatePlayerAvailability();
-});
 
 // Run every year on January 1st at midnight to increase age
 cron.schedule('0 0 1 1 *', () => {
