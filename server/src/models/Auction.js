@@ -40,10 +40,6 @@ const auctionSchema = new mongoose.Schema(
       required: true,
       match: /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/, 
     },
-    auctionEndTime: {
-      type: String,
-    },
-
     players: [
       {
         player: {
@@ -89,4 +85,5 @@ const auctionSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Auction", auctionSchema);
+const Auction =  mongoose.model("Auction", auctionSchema);
+export default Auction;

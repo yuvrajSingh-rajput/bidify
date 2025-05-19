@@ -1,31 +1,30 @@
-// import AuctionDetail from '../models/AuctionDetail.js';
-// import Auction from '../models/Auction.js';
-// import Player from '../models/Player.js';
-// import Team from '../models/Team.js';
+import Auction from '../models/Auction.js';     
+import Player from '../models/Player.js';
+import Team from '../models/Team.js';
 
-// export const createAuction = async (req, res) => {
-//   try {
-//     const {auctionName, auctionDescription, auctionDate, auctionStartTime, playerBasePrice, teamTotalBudget} = req.body;
-//     const existingAuction = await Auction.findOne({auctionName: auctionName});
-//     if(existingAuction){
-//       return res.status(400).json({
-//         error: "auction name is not invalid or not available",
-//       });
-//     }
-//     const auction = new Auction({auctionName, auctionDescription, auctionDate, auctionStartTime, playerBasePrice, teamTotalBudget});
-//     await auction.save();
+export const createAuction = async (req, res) => {
+  try {
+    const {auctionName, auctionDescription, auctionDate, auctionStartTime, playerBasePrice, teamTotalBudget} = req.body;
+    const existingAuction = await Auction.findOne({auctionName: auctionName});
+    if(existingAuction){
+      return res.status(400).json({
+        error: "auction name is not invalid or not available",
+      });
+    }
+    const auction = new Auction({auctionName, auctionDescription, auctionDate, auctionStartTime, playerBasePrice, teamTotalBudget});
+    await auction.save();
 
-//     return res.status(201).json({
-//       auction: auction,
-//       success: true,
-//       message: "auction created successfully.",
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       error: "internal server error",
-//     });
-//   }
-// }
+    return res.status(201).json({
+      auction: auction,
+      success: true,
+      message: "auction created successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "internal server error",
+    });
+  }
+}
 
 // export const createAuctionDetail = async (req, res) => {
 //   try {
