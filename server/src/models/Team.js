@@ -17,20 +17,24 @@ const teamSchema = new mongoose.Schema({
     type: String,
   },
 
-  budget: {
-    type: Number,
-    default: 150000000 
+  registeredAuction: {
+    auctionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Auction",
+    },
+    budget: {
+      type: Number,
+      default: 150000000 
+    },
+    players: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Player'
+    }],
+    remainingBudget: {
+      type: Number,
+      default: 150000000
+    }
   },
-  
-  players: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Player'
-  }],
-
-  remainingBudget: {
-    type: Number,
-    default: 150000000
-  }
 }, {
   timestamps: true
 });
