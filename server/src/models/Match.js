@@ -1,6 +1,86 @@
 import mongoose from "mongoose";
 
+const scorecardSchema = new mongoose.Schema({
+  player: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Player",
+    required: true
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
+    required: true
+  },
+  runs: {
+    type: Number,
+    default: 0
+  },
+  ballsFaced: {
+    type: Number,
+    default: 0
+  },
+  wicketsTaken: {
+    type: Number,
+    default: 0
+  },
+  oversBowled: {
+    type: Number,
+    default: 0
+  }
+});
+
+const teamStatsSchema = new mongoose.Schema({
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
+    required: true
+  },
+  score: {
+    type: Number,
+    default: 0
+  },
+  overs: {
+    type: Number,
+    default: 0
+  },
+  wickets: {
+    type: Number,
+    default: 0
+  },
+  extras: {
+    type: Number,
+    default: 0
+  }
+});
+
+const commentarySchema = new mongoose.Schema({
+  timestamp: {
+    type: Date,
+    default: Date.now
+  },
+  text: {
+    type: String,
+    required: true
+  }
+});
+
+const highlightSchema = new mongoose.Schema({
+  timestamp: {
+    type: Date,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  }
+});
+
 const matchSchema = new mongoose.Schema({
+  tournament: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tournament",
+    required: true
+  },
   team1: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Team",
@@ -14,6 +94,10 @@ const matchSchema = new mongoose.Schema({
   matchDate: {
     type: Date,
     required: true
+  },
+  venue: {
+    type: String,
+    default: "TBD"
   },
   matchStatus: {
     type: String,
@@ -37,89 +121,10 @@ const matchSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Player"
   },
-  venue: {
-    type: String,
-    default: "TBD"
-  },
-  scorecard: [
-    {
-      player: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Player",
-        required: true
-      },
-      team: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Team",
-        required: true
-      },
-      runs: {
-        type: Number,
-        default: 0
-      },
-      ballsFaced: {
-        type: Number,
-        default: 0
-      },
-      wicketsTaken: {
-        type: Number,
-        default: 0
-      },
-      oversBowled: {
-        type: Number,
-        default: 0
-      }
-    }
-  ],
-  teamStats: [
-    {
-      team: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Team",
-        required: true
-      },
-      score: {
-        type: Number,
-        default: 0
-      },
-      overs: {
-        type: Number,
-        default: 0
-      },
-      wickets: {
-        type: Number,
-        default: 0
-      },
-      extras: {
-        type: Number,
-        default: 0
-      }
-    }
-  ],
-  commentary: [
-    {
-      timestamp: {
-        type: Date,
-        default: Date.now
-      },
-      text: {
-        type: String,
-        required: true
-      }
-    }
-  ],
-  highlights: [
-    {
-      timestamp: {
-        type: Date,
-        required: true
-      },
-      description: {
-        type: String,
-        required: true
-      }
-    }
-  ]
+  scorecard: [scorecardSchema],
+  teamStats: [teamStatsSchema],
+  commentary: [commentarySchema],
+  highlights: [highlightSchema]
 }, {
   timestamps: true
 });
