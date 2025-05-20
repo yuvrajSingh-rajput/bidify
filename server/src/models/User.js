@@ -23,10 +23,6 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'team_owner'],
     default: 'team_owner'
   },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
-  }
 }, {
   timestamps: true
 });

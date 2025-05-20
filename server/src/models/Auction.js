@@ -28,10 +28,17 @@ const auctionSchema = new mongoose.Schema(
       default: "pending",
     },
     players: [auctionPlayerSchema],
+    retainedPlayers: [
+      {
+        player: { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
+        team: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
+      }
+    ],
     teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Team" }],
   },
   { timestamps: true }
 );
+
 
 const Auction = mongoose.model("Auction", auctionSchema);
 export default Auction;
