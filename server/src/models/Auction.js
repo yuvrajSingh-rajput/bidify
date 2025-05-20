@@ -16,6 +16,11 @@ const auctionPlayerSchema = new mongoose.Schema({
   soldPrice: { type: Number },
 });
 
+const teamBudgetSchema = new mongoose.Schema({
+  team: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
+  remainingBudget: { type: Number, required: true },
+});
+
 const auctionSchema = new mongoose.Schema(
   {
     tournamentName: { type: String, required: true, unique: true },
@@ -35,6 +40,8 @@ const auctionSchema = new mongoose.Schema(
       }
     ],
     teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Team" }],
+    teamBudgets: [teamBudgetSchema],
+    maxBudget: { type: Number, required: true },
   },
   { timestamps: true }
 );

@@ -78,26 +78,6 @@ const playerSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-
-  playingHistory: [{
-    auctionName: {
-      type: String,
-    },
-    teamId: {
-      type: String,
-    },
-    year: {
-      type: Date,
-    },
-    purchasedPrice: {
-      type: String,
-    },
-    playingStatus: {
-      type: String,
-      enum: ["active", "finished"],
-      default: "active",
-    }
-  }],
 }, {
   timestamps: true,
 });
