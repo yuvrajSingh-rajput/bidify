@@ -42,6 +42,7 @@ const auctionSchema = new mongoose.Schema(
     teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Team" }],
     teamBudgets: [teamBudgetSchema],
     maxBudget: { type: Number, required: true },
+    minBidIncrement: { type: Number, default: 500000 }, // ₹5 lakh default
   },
   { timestamps: true }
 );
