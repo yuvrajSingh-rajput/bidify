@@ -5,9 +5,9 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 
-import authRoutes from './routes/auth.js';
-import teamRoutes from './routes/teams.js';
-import playerRoutes from './routes/players.js';
+import authRoutes from './routes/auth.route.js';
+import teamRoutes from './routes/team.route.js';
+import playerRoutes from './routes/player.route.js';
 // import auctionRoutes from './routes/auctions.js';
 import { errorHandler } from './middleware/errorHandler.js';
 // import { setupSocketHandlers } from './utils/socket.js';
