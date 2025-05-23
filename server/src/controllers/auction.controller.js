@@ -79,10 +79,18 @@ export const updateAuctionStatus = async (req, res) => {
     auction.status = status;
     await auction.save();
 
+    // emit "auction-started" event if status is "active"
+    if (status === 'active') {
+      const io = req.app.get('io');
+      io.to(auction._id.toString()).emit('auction-started', {
+        auctionId: auction._id,
+        message: 'Auction has started!',
+      });
+    }
+
     res.status(200).json({ success: true, message: 'Auction status updated', auction });
   } catch (error) {
     console.error('Error updating auction status:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-

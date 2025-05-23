@@ -204,12 +204,20 @@ export const deletePlayer = async (req, res) => {
     if (!player) {
       return res.status(404).json({ error: 'Player not found' });
     }
-    
-    await player.remove();
-    return res.status(200).json({ message: 'Player deleted successfully' });
 
+    if (player.profilePhoto && player.profilePhoto !== defaultProfilePhoto) {
+      const publicId = player.profilePhoto.split("/").pop().split(".")[0];
+      await deleteMediaFromCloudinary(publicId);
+    }
+    for (const certUrl of player.certificates) {
+        const publicId = certUrl.split("/").pop().split(".")[0];
+        await deleteMediaFromCloudinary(publicId);
+    }
+
+    await Player.deleteOne({ _id: req.params.id });
+    return res.status(200).json({ message: 'Player deleted successfully' });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "internal server error" });
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };

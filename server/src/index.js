@@ -11,6 +11,7 @@ import playerRoutes from './routes/player.route.js';
 // import auctionRoutes from './routes/auctions.js';
 import { errorHandler } from './middleware/errorHandler.js';
 // import { setupSocketHandlers } from './utils/socket.js';
+import { initKafkaProducer } from './kafka/producer.js';
 
 dotenv.config();
 
@@ -24,11 +25,13 @@ const io = new Server(httpServer, {
   }
 });
 
-// ✅ Use only Express's built-in JSON and URL encoding (remove body-parser)
+await initKafkaProducer();
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Cleaned up CORS middleware
+// CORS configuration
 app.use(cors({
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8080', 'http://127.0.0.1:8080'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -36,7 +39,7 @@ app.use(cors({
   credentials: true
 }));
 
-// ✅ Debug middleware to check incoming request data
+// Debug middleware to check incoming request data
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.url}`);
   console.log("Headers:", req.headers);
