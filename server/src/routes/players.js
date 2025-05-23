@@ -5,7 +5,7 @@ import {
     updatePlayer, 
     deletePlayer, 
     createPlayerRequest
-} from '../controllers/playerController.js';
+} from '../controllers/player.controller.js';
 import { auth, adminOnly } from '../middleware/auth.js';
 import upload from '../utils/multer.js';
 

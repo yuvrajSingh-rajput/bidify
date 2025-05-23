@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import User from '../models/User.js'; 
 import Team from '../models/Team.js';
 import { uploadMedia, deleteMediaFromCloudinary } from '../utils/cloudinary.js';
 
@@ -7,6 +7,7 @@ export const register = async (req, res) => {
   try {
     console.log(req.body);
     console.log(req.file);
+
     const { name, email, password, role, teamName } = req.body;
 
     const existingUser = await User.findOne({ email });
@@ -18,25 +19,27 @@ export const register = async (req, res) => {
     await user.save();
 
     if (role === 'team_owner') {
-      const existingTeam = await Team.findOne({teamName: teamName}); 
-      if(existingTeam){
-        return res.staus(400).json({
-          error: "team of this name already exists, login or enter a different team name.",
+      const existingTeam = await Team.findOne({ name: teamName }); 
+      if (existingTeam) {
+        return res.status(400).json({
+          error: "Team of this name already exists, login or enter a different team name.",
         });
       }
 
       const teamLogo = req.file;
-      let imageUrl = "https://t3.ftcdn.net/jpg/05/13/39/96/360_F_513399651_7X6aDPItRkVK4RtrysnGF8A88Gyfes3T.jpg"
-      if(teamLogo){
+      let imageUrl = "https://t3.ftcdn.net/jpg/05/13/39/96/360_F_513399651_7X6aDPItRkVK4RtrysnGF8A88Gyfes3T.jpg";
+
+      if (teamLogo) {
         const cloudResponse = await uploadMedia(teamLogo.path);
         imageUrl = cloudResponse.secure_url;
       }
-      const updatedData = {
-        teamName: teamName,
-        teamLogo: imageUrl,
+
+      const team = new Team({
+        name: teamName,
+        logo: imageUrl,
         owner: user._id,
-      };
-      const team = new Team(updatedData);
+      });
+
       await team.save();
       user.team = team._id;
       await user.save();
@@ -58,9 +61,11 @@ export const register = async (req, res) => {
       token
     });
   } catch (error) {
+    console.error("Registration Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 export const login = async (req, res) => {
   try {
@@ -99,12 +104,21 @@ export const login = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    let profileData = { user };
+
     if (user.role === 'team_owner') {
       const team = await Team.findOne({ owner: user._id });
-      return res.json({ user, team });
+      profileData.team = team;
     }
-    res.json({ user });
+
+    res.json(profileData);
   } catch (error) {
+    console.error("Get Profile Error:", error.message);
     res.status(400).json({ error: error.message });
   }
 };
