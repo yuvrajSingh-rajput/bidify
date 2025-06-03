@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { sendBidToKafka } from './kafka/producer.js';
-import Auction from './models/Auction.js';
-import Team from './models/Team.js';
-import User from './models/User.js';
+import { sendBidToKafka } from '../kafka/producer.js';
+import Auction from '../models/Auction.js';
+import Team from '../models/Team.js';
+import User from '../models/User.js';
 import { isValidObjectId } from 'mongoose';
 
 export const setupSocketHandlers = (io) => {
